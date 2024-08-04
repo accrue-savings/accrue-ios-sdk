@@ -5,10 +5,15 @@ import Foundation
 
 import SwiftUI
 
-public struct ContextData {
-    let referenceId: String
-    let email: String
-    let phoneNumber: String
+public let referenceId: String
+   public let email: String
+   public let phoneNumber: String
+   
+   public init(referenceId: String, email: String, phoneNumber: String) {
+       self.referenceId = referenceId
+       self.email = email
+       self.phoneNumber = phoneNumber
+   }
 }
 
 #if os(iOS)
@@ -17,6 +22,12 @@ public struct WebView: UIViewRepresentable {
     public var contextData: ContextData?
     public var onSignIn: ((String) -> Void)?
       
+    
+    public init(url: URL, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
+           self.url = url
+           self.contextData = contextData
+           self.onSignIn = onSignIn
+   }
     public class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: WebView
           
