@@ -12,7 +12,7 @@ struct ContextData {
 }
 
 #if os(iOS)
-struct WebView: UIViewRepresentable {
+public struct WebView: UIViewRepresentable {
     let url: URL
     var contextData: ContextData?
     var onSignIn: ((String) -> Void)?

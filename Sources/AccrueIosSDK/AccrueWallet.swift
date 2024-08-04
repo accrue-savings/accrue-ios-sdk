@@ -1,7 +1,7 @@
 import SwiftUI
 
 
-struct AccrueWallet: View {
+public struct AccrueWallet: View {
     let merchantId: String
     let redirectionToken: String
     var onSignIn: ((String) -> Void)?
