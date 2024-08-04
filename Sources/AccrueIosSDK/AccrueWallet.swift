@@ -6,6 +6,15 @@ public struct AccrueWallet: View {
     public let redirectionToken: String
     public var onSignIn: ((String) -> Void)?
     public var contextData: ContextData?
+    
+    
+    public init(merchantId: String, redirectionToken: String, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
+      self.merchantId = merchantId
+      self.redirectionToken = redirectionToken
+      self.contextData = contextData
+      self.onSignIn = onSignIn
+    }
+    
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
