@@ -5,7 +5,7 @@ import Foundation
 
 import SwiftUI
 
-struct ContextData {
+public struct ContextData {
     let referenceId: String
     let email: String
     let phoneNumber: String
