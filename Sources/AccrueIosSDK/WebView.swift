@@ -35,8 +35,6 @@ public struct WebView: UIViewRepresentable {
         }
           
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-          print("Being called")
-          print(message.name)
           if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
               parent.onSignIn?(userData)
           }
