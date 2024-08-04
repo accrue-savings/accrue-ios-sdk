@@ -13,30 +13,30 @@ public struct ContextData {
 
 #if os(iOS)
 public struct WebView: UIViewRepresentable {
-    let url: URL
-    var contextData: ContextData?
-    var onSignIn: ((String) -> Void)?
+    public let url: URL
+    public var contextData: ContextData?
+    public var onSignIn: ((String) -> Void)?
       
-    class Coordinator: NSObject, WKScriptMessageHandler {
-      var parent: WebView
+    public class Coordinator: NSObject, WKScriptMessageHandler {
+        var parent: WebView
           
-      init(parent: WebView) {
+        public init(parent: WebView) {
           self.parent = parent
-      }
+        }
           
-      func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
           print("Being called")
           print(message.name)
           if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
               parent.onSignIn?(userData)
           }
-      }
+        }
     }
-    func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator {
             Coordinator(parent: self)
     }
     @available(iOS 13.0, *)
-    func makeUIView(context: Context) -> WKWebView {
+    public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
@@ -54,7 +54,7 @@ public struct WebView: UIViewRepresentable {
         return webView
     }
     @available(iOS 13.0, *)
-    func updateUIView(_ uiView: WKWebView, context: Context) {
+    public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
       
         uiView.load(request)
