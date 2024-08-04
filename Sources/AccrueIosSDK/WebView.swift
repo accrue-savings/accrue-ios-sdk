@@ -3,17 +3,16 @@ import WebKit
 
 import Foundation
 
-import SwiftUI
-
-public let referenceId: String
-   public let email: String
-   public let phoneNumber: String
-   
-   public init(referenceId: String, email: String, phoneNumber: String) {
-       self.referenceId = referenceId
-       self.email = email
-       self.phoneNumber = phoneNumber
-   }
+public struct ContextData {
+    public let referenceId: String
+    public let email: String
+    public let phoneNumber: String
+    
+    public init(referenceId: String, email: String, phoneNumber: String) {
+        self.referenceId = referenceId
+        self.email = email
+        self.phoneNumber = phoneNumber
+    }
 }
 
 #if os(iOS)
