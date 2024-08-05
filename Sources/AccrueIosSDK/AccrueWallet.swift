@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 public struct AccrueWallet: View {
     public let merchantId: String
     public let redirectionToken: String
