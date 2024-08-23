@@ -1,0 +1,61 @@
+name: Release  ###
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: 'write'
+  id-token: 'write'
+  pull-requests: 'write'
+
+jobs:
+  release:
+    name: Release Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semver.outputs.next }}
+      from_tag: ${{ steps.semver.outputs.next }}
+      to_tag: ${{ steps.semver.outputs.current }}
+    steps:
+      - name: Get Next Version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          branch: 'main'
+          token: ${{ github.token }}
+          skipInvalidTags: true
+          patchList: chore, fix, bugfix, perf, refactor, test, tests, ci
+          maxTagsToFetch: 40
+
+      - name: Create Pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.semver.outputs.next }}
+          generate_release_notes: true
+          prerelease: true
+          make_latest: false
+          target_commitish: 'main'
+
+      - name: Update CHANGELOG
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          fromTag: ${{ needs.prepare.outputs.from_tag }}
+          toTag: ${{ needs.prepare.outputs.to_tag }}
+          writeToFile: false
+          includeRefIssues: false
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          body: ${{ steps.changelog.outputs.changes }}
+          prerelease: false
+          make_latest: true
