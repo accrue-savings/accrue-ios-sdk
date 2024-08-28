@@ -7,11 +7,24 @@ public struct ContextData {
     public let referenceId: String
     public let email: String
     public let phoneNumber: String
+    public let disableLogout: Bool
+    public let loginRequiresReferenceId: Bool
+    public let skipPhoneInputScreen: Bool
     
-    public init(referenceId: String, email: String, phoneNumber: String) {
+    public init(
+        referenceId: String,
+        email: String,
+        phoneNumber: String,
+        disableLogout: Bool = false,
+        loginRequiresReferenceId: Bool = false,
+        skipPhoneInputScreen: Bool = false
+    ) {
         self.referenceId = referenceId
         self.email = email
         self.phoneNumber = phoneNumber
+        self.disableLogout = disableLogout
+        self.loginRequiresReferenceId = loginRequiresReferenceId
+        self.skipPhoneInputScreen = skipPhoneInputScreen
     }
 }
 
@@ -20,28 +33,28 @@ public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: ContextData?
     public var onSignIn: ((String) -> Void)?
-      
+    
     
     public init(url: URL, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
-           self.url = url
-           self.contextData = contextData
-           self.onSignIn = onSignIn
-   }
+        self.url = url
+        self.contextData = contextData
+        self.onSignIn = onSignIn
+    }
     public class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: WebView
-          
+        
         public init(parent: WebView) {
-          self.parent = parent
+            self.parent = parent
         }
-          
+        
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-          if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
-              parent.onSignIn?(userData)
-          }
+            if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
+                parent.onSignIn?(userData)
+            }
         }
     }
     public func makeCoordinator() -> Coordinator {
-            Coordinator(parent: self)
+        Coordinator(parent: self)
     }
     @available(iOS 13.0, *)
     public func makeUIView(context: Context) -> WKWebView {
@@ -49,8 +62,8 @@ public struct WebView: UIViewRepresentable {
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
-
-       
+        
+        
         // Inject JavaScript to set context data
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
@@ -58,13 +71,13 @@ public struct WebView: UIViewRepresentable {
             let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
             userContentController.addUserScript(userScript)
         }
-       
+        
         return webView
     }
     @available(iOS 13.0, *)
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
-      
+        
         uiView.load(request)
     }
     // Generate JavaScript for Context Data
@@ -74,7 +87,10 @@ public struct WebView: UIViewRepresentable {
                     "contextData": {
                         "referenceId": "\(contextData.referenceId)",
                         "email": "\(contextData.email)",
-                        "phoneNumber": "\(contextData.phoneNumber)"
+                        "phoneNumber": "\(contextData.phoneNumber)",
+                        "disableLogout": \(contextData.disableLogout),
+                        "loginRequiresReferenceId": \(contextData.loginRequiresReferenceId),
+                        "skipPhoneInputScreen": \(contextData.skipPhoneInputScreen)
                     }
               };
               """

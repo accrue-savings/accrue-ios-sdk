@@ -1,6 +1,6 @@
 public struct AppConstants {
     // Mocked testing environment
-    static let apiBaseUrl:String = "https://embed-sandbox.accruesavings.com/webview"
+    static let apiBaseUrl:String = "http://localhost:5173/webview"
     // Mocked merchantId
     static let merchantId: String = "7ac10172-c0bd-4009-a85a-972d33efbd04"
     static let redirectionToken = "redirection-token"
