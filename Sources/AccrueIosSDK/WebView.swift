@@ -19,13 +19,13 @@ public struct ContextData {
 public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: ContextData?
-    public var onSignIn: ((String) -> Void)?
+    public var onAction: ((String) -> Void)?
       
     
-    public init(url: URL, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
+    public init(url: URL, contextData: ContextData? = nil, onAction: ((String) -> Void)? = nil) {
            self.url = url
            self.contextData = contextData
-           self.onSignIn = onSignIn
+           self.onAction = onAction
    }
     public class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: WebView
@@ -36,7 +36,7 @@ public struct WebView: UIViewRepresentable {
           
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
           if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
-              parent.onSignIn?(userData)
+              parent.onAction?(userData)
           }
         }
     }
