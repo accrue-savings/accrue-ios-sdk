@@ -18,7 +18,7 @@ public struct AccrueWallet: View {
     public var body: some View {
         #if os(iOS)
         if let url = URL(string: "\(AppConstants.apiBaseUrl)?merchantId=\(merchantId)&redirectionToken=\(redirectionToken)") {
-            WebView(url: url,contextData: contextData, onSignIn: onSignIn )
+            WebView(url: url,contextData: contextData, onAction: onAction )
         } else {
             Text("Invalid URL")
         }
