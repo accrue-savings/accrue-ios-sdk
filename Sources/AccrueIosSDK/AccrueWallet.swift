@@ -2,28 +2,40 @@ import SwiftUI
 
 public struct AccrueWallet: View {
     public let merchantId: String
-    public let redirectionToken: String
+    public let redirectionToken: String?
     public var onSignIn: ((String) -> Void)?
-    public var contextData: ContextData?
+    public var contextData: AccrueContextData?
     
-    
-    public init(merchantId: String, redirectionToken: String, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
-      self.merchantId = merchantId
-      self.redirectionToken = redirectionToken
-      self.contextData = contextData
-      self.onSignIn = onSignIn
+    public init(merchantId: String, redirectionToken: String? = nil, contextData: AccrueContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
+        self.merchantId = merchantId
+        self.redirectionToken = redirectionToken
+        self.contextData = contextData
+        self.onSignIn = onSignIn
     }
     
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
-        if let url = URL(string: "\(AppConstants.apiBaseUrl)?merchantId=\(merchantId)&redirectionToken=\(redirectionToken)") {
-            WebView(url: url,contextData: contextData, onSignIn: onSignIn )
+        if let url = buildURL() {
+            WebView(url: url, contextData: contextData, onSignIn: onSignIn)
         } else {
             Text("Invalid URL")
         }
         #else
-            Text("Platform not supported")
+        Text("Platform not supported")
         #endif
+    }
+    
+    private func buildURL() -> URL? {
+        var urlComponents = URLComponents(string: AppConstants.apiBaseUrl)
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "merchantId", value: merchantId)
+        ]
+        
+        if let redirectionToken = redirectionToken {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "redirectionToken", value: redirectionToken))
+        }
+        
+        return urlComponents?.url
     }
 }
