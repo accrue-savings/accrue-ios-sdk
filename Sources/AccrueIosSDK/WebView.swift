@@ -3,25 +3,45 @@ import WebKit
 
 import Foundation
 
-public struct ContextData {
-    public let referenceId: String
-    public let email: String
-    public let phoneNumber: String
+public struct AccrueContextData {
+    public let userData: AccrueUserData?
+    public let settingsData: AccrueSettingsData
+    
+    public init(
+        userData: AccrueUserData? = nil,
+        settingsData: AccrueSettingsData = AccrueSettingsData()
+    ) {
+        self.userData = userData
+        self.settingsData = settingsData
+    }
+}
+
+public struct AccrueUserData {
+    public let referenceId: String?
+    public let email: String?
+    public let phoneNumber: String?
+    
+    public init(
+        referenceId: String? = nil,
+        email: String? = nil,
+        phoneNumber: String? = nil
+    ) {
+        self.referenceId = referenceId
+        self.email = email
+        self.phoneNumber = phoneNumber
+    }
+}
+
+public struct AccrueSettingsData {
     public let disableLogout: Bool
     public let loginRequiresReferenceId: Bool
     public let skipPhoneInputScreen: Bool
     
     public init(
-        referenceId: String,
-        email: String,
-        phoneNumber: String,
         disableLogout: Bool = false,
         loginRequiresReferenceId: Bool = false,
         skipPhoneInputScreen: Bool = false
     ) {
-        self.referenceId = referenceId
-        self.email = email
-        self.phoneNumber = phoneNumber
         self.disableLogout = disableLogout
         self.loginRequiresReferenceId = loginRequiresReferenceId
         self.skipPhoneInputScreen = skipPhoneInputScreen
@@ -31,11 +51,11 @@ public struct ContextData {
 #if os(iOS)
 public struct WebView: UIViewRepresentable {
     public let url: URL
-    public var contextData: ContextData?
+    public var contextData: AccrueContextData?
     public var onSignIn: ((String) -> Void)?
     
     
-    public init(url: URL, contextData: ContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
         self.url = url
         self.contextData = contextData
         self.onSignIn = onSignIn
@@ -81,19 +101,26 @@ public struct WebView: UIViewRepresentable {
         uiView.load(request)
     }
     // Generate JavaScript for Context Data
-    private func generateContextDataScript(contextData: ContextData) -> String {
+    private func generateContextDataScript(contextData: AccrueContextData) -> String {
+        let userData = contextData.userData
+        let settingsData = contextData.settingsData
+        
         return """
-              window["\(AccrueWebEvents.EventHandlerName)"] = {
-                    "contextData": {
-                        "referenceId": "\(contextData.referenceId)",
-                        "email": "\(contextData.email)",
-                        "phoneNumber": "\(contextData.phoneNumber)",
-                        "disableLogout": \(contextData.disableLogout),
-                        "loginRequiresReferenceId": \(contextData.loginRequiresReferenceId),
-                        "skipPhoneInputScreen": \(contextData.skipPhoneInputScreen)
-                    }
-              };
-              """
+        window["\(AccrueWebEvents.EventHandlerName)"] = {
+            "contextData": {
+                "userData": {
+                    "referenceId": \(userData?.referenceId.map { "\"\($0)\"" } ?? "null"),
+                    "email": \(userData?.email.map { "\"\($0)\"" } ?? "null"),
+                    "phoneNumber": \(userData?.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                },
+                "settingsData": {
+                    "disableLogout": \(settingsData.disableLogout),
+                    "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
+                    "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
+                }
+            }
+        };
+        """
     }
 }
 #endif
