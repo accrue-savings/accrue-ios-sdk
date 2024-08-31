@@ -7,7 +7,7 @@ public struct AccrueWallet: View {
     public var contextData: AccrueContextData?
     
     
-    public init(merchantId: String, redirectionToken: String, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
       self.merchantId = merchantId
       self.redirectionToken = redirectionToken
       self.contextData = contextData
