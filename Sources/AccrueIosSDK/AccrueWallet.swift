@@ -2,12 +2,12 @@ import SwiftUI
 
 public struct AccrueWallet: View {
     public let merchantId: String
-    public let redirectionToken: String
+    public let redirectionToken: String?
     public var onAction: ((String) -> Void)?
-    public var contextData: ContextData?
+    public var contextData: AccrueContextData?
     
     
-    public init(merchantId: String, redirectionToken: String, contextData: ContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
       self.merchantId = merchantId
       self.redirectionToken = redirectionToken
       self.contextData = contextData
