@@ -17,13 +17,26 @@ public struct AccrueWallet: View {
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
-        if let url = URL(string: "\(AppConstants.apiBaseUrl)?merchantId=\(merchantId)&redirectionToken=\(redirectionToken)") {
-            WebView(url: url,contextData: contextData, onAction: onAction )
+        if let url = buildURL() {
+            WebView(url: url, contextData: contextData, onSignIn: onSignIn)
         } else {
             Text("Invalid URL")
         }
         #else
-            Text("Platform not supported")
+        Text("Platform not supported")
         #endif
+    }
+    
+    private func buildURL() -> URL? {
+        var urlComponents = URLComponents(string: AppConstants.apiBaseUrl)
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "merchantId", value: merchantId)
+        ]
+        
+        if let redirectionToken = redirectionToken {
+            urlComponents?.queryItems?.append(URLQueryItem(name: "redirectionToken", value: redirectionToken))
+        }
+        
+        return urlComponents?.url
     }
 }
