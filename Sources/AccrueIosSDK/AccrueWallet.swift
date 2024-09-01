@@ -19,7 +19,7 @@ public struct AccrueWallet: View {
     public var body: some View {
         #if os(iOS)
         if let url = buildURL() {
-            WebView(url: url, contextData: contextData, onSignIn: onSignIn)
+            WebView(url: url, contextData: contextData, onAction: onAction)
         } else {
             Text("Invalid URL")
         }
