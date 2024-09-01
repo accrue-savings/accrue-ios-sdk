@@ -65,9 +65,9 @@ public struct WebView: UIViewRepresentable {
         window["\(AccrueWebEvents.EventHandlerName)"] = {
             "contextData": {
                 "userData": {
-                    "referenceId": \(userData?.referenceId.map { "\"\($0)\"" } ?? "null"),
-                    "email": \(userData?.email.map { "\"\($0)\"" } ?? "null"),
-                    "phoneNumber": \(userData?.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                    "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
+                    "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
+                    "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
                 },
                 "settingsData": {
                     "disableLogout": \(settingsData.disableLogout),
