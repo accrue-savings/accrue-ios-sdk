@@ -1,10 +1,11 @@
 import SwiftUI
 
+#if os(iOS)
 public struct AccrueWallet: View {
     public let merchantId: String
     public let redirectionToken: String?
     public var onAction: ((String) -> Void)?
-    public var contextData: AccrueContextData?
+    @ObservedObject var contextData: AccrueContextData?
     
     
     public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
@@ -40,3 +41,4 @@ public struct AccrueWallet: View {
         return urlComponents?.url
     }
 }
+#endif

@@ -3,51 +3,6 @@ import WebKit
 
 import Foundation
 
-public struct AccrueContextData {
-    public let userData: AccrueUserData?
-    public let settingsData: AccrueSettingsData
-    
-    public init(
-        userData: AccrueUserData? = nil,
-        settingsData: AccrueSettingsData = AccrueSettingsData()
-    ) {
-        self.userData = userData
-        self.settingsData = settingsData
-    }
-}
-
-public struct AccrueUserData {
-    public let referenceId: String?
-    public let email: String?
-    public let phoneNumber: String?
-    
-    public init(
-        referenceId: String? = nil,
-        email: String? = nil,
-        phoneNumber: String? = nil
-    ) {
-        self.referenceId = referenceId
-        self.email = email
-        self.phoneNumber = phoneNumber
-    }
-}
-
-public struct AccrueSettingsData {
-    public let disableLogout: Bool
-    public let loginRequiresReferenceId: Bool
-    public let skipPhoneInputScreen: Bool
-    
-    public init(
-        disableLogout: Bool = false,
-        loginRequiresReferenceId: Bool = false,
-        skipPhoneInputScreen: Bool = false
-    ) {
-        self.disableLogout = disableLogout
-        self.loginRequiresReferenceId = loginRequiresReferenceId
-        self.skipPhoneInputScreen = skipPhoneInputScreen
-    }
-}
-
 #if os(iOS)
 public struct WebView: UIViewRepresentable {
     public let url: URL
