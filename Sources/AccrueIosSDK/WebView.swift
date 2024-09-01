@@ -6,11 +6,11 @@ import Foundation
 #if os(iOS)
 public struct WebView: UIViewRepresentable {
     public let url: URL
-    public var contextData: ContextData?
+    public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
       
     
-    public init(url: URL, contextData: ContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
            self.url = url
            self.contextData = contextData
            self.onAction = onAction
