@@ -2,11 +2,11 @@ import SwiftUI
 
 @available(macOS 10.15, *)
 public class AccrueContextData: ObservableObject {
-    @Published public var  userData: AccrueUserData?
+    @Published public var  userData: AccrueUserData
     @Published public var  settingsData: AccrueSettingsData
     
     public init(
-        userData: AccrueUserData? = nil,
+        userData: AccrueUserData = AccrueUserData(),
         settingsData: AccrueSettingsData = AccrueSettingsData()
     ) {
         self.userData = userData
