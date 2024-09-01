@@ -1,14 +1,15 @@
 import SwiftUI
 
-#if os(iOS)
+ 
+@available(macOS 10.15, *)
 public struct AccrueWallet: View {
     public let merchantId: String
     public let redirectionToken: String?
     public var onAction: ((String) -> Void)?
-    @ObservedObject var contextData: AccrueContextData?
+    @ObservedObject var contextData: AccrueContextData
     
     
-    public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
       self.merchantId = merchantId
       self.redirectionToken = redirectionToken
       self.contextData = contextData
@@ -41,4 +42,4 @@ public struct AccrueWallet: View {
         return urlComponents?.url
     }
 }
-#endif
+ 

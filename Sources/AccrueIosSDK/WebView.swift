@@ -3,7 +3,8 @@ import WebKit
 
 import Foundation
 
-#if os(iOS)
+
+@available(macOS 10.15, *)
 public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
@@ -78,4 +79,4 @@ public struct WebView: UIViewRepresentable {
         """
     }
 }
-#endif
+
