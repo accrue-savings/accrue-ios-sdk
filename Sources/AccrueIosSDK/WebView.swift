@@ -53,7 +53,7 @@ public struct WebView: UIViewRepresentable {
     @available(iOS 13.0, *)
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
-        
+        print("Updating view...")
         uiView.load(request)
     }
     // Generate JavaScript for Context Data
