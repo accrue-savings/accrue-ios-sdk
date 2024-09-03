@@ -8,4 +8,5 @@ public struct AppConstants {
 public struct AccrueWebEvents {
     static let EventHandlerName:String = "AccrueWallet"
     static let AccrueWalletSignInPerfomerdMessageKey:String = "AccrueWallet::SignInPerformed"
+    static let AccrueWalletContextChangedEventKey:String = "AccrueWallet::ContextChanged"
 }

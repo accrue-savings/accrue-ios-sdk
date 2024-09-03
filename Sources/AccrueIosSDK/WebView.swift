@@ -52,19 +52,21 @@ public struct WebView: UIViewRepresentable {
       
         if url != uiView.url {
             uiView.load(request)
-            print("Updating view...")
-        }else {
-            print("URL unchanged, updating context data...")
         }
         
-        // Inject the updated context data
+        // Refresh context data
+        refreshContextData(webView: uiView)
+    }
+    
+    private func refreshContextData(webView: WKWebView) -> Void {
         if let contextData = contextData {
+            
             let contextDataScript = generateContextDataScript(contextData: contextData)
-            uiView.evaluateJavaScript(contextDataScript)
+            webView.evaluateJavaScript(contextDataScript)
         }
     }
     
-    private func insertContextData(userController: WKUserContentController, shouldForceUpdate: Bool = false) -> Void {
+    private func insertContextData(userController: WKUserContentController) -> Void {
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
             print(contextDataScript)
@@ -78,21 +80,29 @@ public struct WebView: UIViewRepresentable {
         let settingsData = contextData.settingsData
         
         return """
-        window["\(AccrueWebEvents.EventHandlerName)"] = {
-            "contextData": {
-                "userData": {
-                    "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
-                    "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
-                    "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
-                },
-                "settingsData": {
-                    "disableLogout": \(settingsData.disableLogout),
-                    "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
-                    "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
-                }
-            }
-        };
-        """
+          (function() {
+                window["\(AccrueWebEvents.EventHandlerName)"] = {
+                    "contextData": {
+                        "userData": {
+                            "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
+                            "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
+                            "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                        },
+                        "settingsData": {
+                            "disableLogout": \(settingsData.disableLogout),
+                            "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
+                            "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
+                        }
+                    }
+                };
+                // Notify the web page that contextData has been updated
+                var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
+                  detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
+                });
+                window.dispatchEvent(event);
+            
+          })();
+          """
     }
 }
 
