@@ -41,13 +41,18 @@ public struct WebView: UIViewRepresentable {
         
         
         // Inject JavaScript to set context data
-        insertContextData(userController: userContentController)
+        if let contextData = contextData {
+            let contextDataScript = generateContextDataScript(contextData: contextData)
+            webView.evaluateJavaScript(contextDataScript)
+        }
+        //insertContextData(userController: userContentController)
         
         return webView
     }
     @available(iOS 13.0, *)
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
+        
       
         if url != uiView.url {
             uiView.load(request)
@@ -61,7 +66,12 @@ public struct WebView: UIViewRepresentable {
         uiView.configuration.userContentController.removeAllUserScripts()
         
         // Inject the updated context data script
-        insertContextData(userController: uiView.configuration.userContentController)
+        
+        if let contextData = contextData {
+            let contextDataScript = generateContextDataScript(contextData: contextData)
+            uiView.evaluateJavaScript(contextDataScript)
+        }
+        //insertContextData(userController: uiView.configuration.userContentController)
     }
     
     private func insertContextData(userController: WKUserContentController, shouldForceUpdate: Bool = false) -> Void {
