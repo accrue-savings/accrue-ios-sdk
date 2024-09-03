@@ -50,8 +50,13 @@ public struct WebView: UIViewRepresentable {
         let request = URLRequest(url: url)
         let userContentController = uiView.configuration.userContentController
         insertContextData(userController: userContentController)
-        print("Updating view...", context)
-        uiView.load(request)
+      
+        if url != uiView.url {
+            uiView.load(request)
+            print("Updating view...")
+        }
+       
+        
     }
     
     private func insertContextData(userController: WKUserContentController, shouldForceUpdate: Bool = false) -> Void {
