@@ -56,10 +56,6 @@ public struct WebView: UIViewRepresentable {
         }else {
             print("URL unchanged, updating context data...")
         }
-       
-        
-        // Remove all existing user scripts
-        uiView.configuration.userContentController.removeAllUserScripts()
         
         // Inject the updated context data
         if let contextData = contextData {
