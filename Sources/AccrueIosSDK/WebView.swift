@@ -41,11 +41,7 @@ public struct WebView: UIViewRepresentable {
         
         
         // Inject JavaScript to set context data
-        if let contextData = contextData {
-            let contextDataScript = generateContextDataScript(contextData: contextData)
-            webView.evaluateJavaScript(contextDataScript)
-        }
-        //insertContextData(userController: userContentController)
+        insertContextData(userController: userContentController)
         
         return webView
     }
@@ -65,13 +61,11 @@ public struct WebView: UIViewRepresentable {
         // Remove all existing user scripts
         uiView.configuration.userContentController.removeAllUserScripts()
         
-        // Inject the updated context data script
-        
+        // Inject the updated context data
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
             uiView.evaluateJavaScript(contextDataScript)
         }
-        //insertContextData(userController: uiView.configuration.userContentController)
     }
     
     private func insertContextData(userController: WKUserContentController, shouldForceUpdate: Bool = false) -> Void {
