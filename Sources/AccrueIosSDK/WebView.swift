@@ -48,15 +48,20 @@ public struct WebView: UIViewRepresentable {
     @available(iOS 13.0, *)
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
-        let userContentController = uiView.configuration.userContentController
-        insertContextData(userController: userContentController)
       
         if url != uiView.url {
             uiView.load(request)
             print("Updating view...")
+        }else {
+            print("URL unchanged, updating context data...")
         }
        
         
+        // Remove all existing user scripts
+        uiView.configuration.userContentController.removeAllUserScripts()
+        
+        // Inject the updated context data script
+        insertContextData(userController: uiView.configuration.userContentController)
     }
     
     private func insertContextData(userController: WKUserContentController, shouldForceUpdate: Bool = false) -> Void {
