@@ -41,15 +41,18 @@ public struct AccrueSettingsData {
     public let disableLogout: Bool
     public let loginRequiresReferenceId: Bool
     public let skipPhoneInputScreen: Bool
+    public let shouldInheritAuthentication: Bool
     
     public init(
         disableLogout: Bool = false,
         loginRequiresReferenceId: Bool = false,
-        skipPhoneInputScreen: Bool = false
+        skipPhoneInputScreen: Bool = false,
+        shouldInheritAuthentication: Bool = true
     ) {
         self.disableLogout = disableLogout
         self.loginRequiresReferenceId = loginRequiresReferenceId
         self.skipPhoneInputScreen = skipPhoneInputScreen
+        self.shouldInheritAuthentication = shouldInheritAuthentication
     }
 }
  
