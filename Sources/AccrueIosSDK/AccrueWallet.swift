@@ -1,23 +1,26 @@
 import SwiftUI
 
+ 
+@available(macOS 10.15, *)
 public struct AccrueWallet: View {
     public let merchantId: String
     public let redirectionToken: String?
-    public var onSignIn: ((String) -> Void)?
-    public var contextData: AccrueContextData?
+    public var onAction: ((String) -> Void)?
+    @ObservedObject var contextData: AccrueContextData
     
-    public init(merchantId: String, redirectionToken: String? = nil, contextData: AccrueContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
-        self.merchantId = merchantId
-        self.redirectionToken = redirectionToken
-        self.contextData = contextData
-        self.onSignIn = onSignIn
+    
+    public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
+      self.merchantId = merchantId
+      self.redirectionToken = redirectionToken
+      self.contextData = contextData
+      self.onAction = onAction
     }
     
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
         if let url = buildURL() {
-            WebView(url: url, contextData: contextData, onSignIn: onSignIn)
+            WebView(url: url, contextData: contextData, onAction: onAction)
         } else {
             Text("Invalid URL")
         }
@@ -39,3 +42,4 @@ public struct AccrueWallet: View {
         return urlComponents?.url
     }
 }
+ 

@@ -3,63 +3,19 @@ import WebKit
 
 import Foundation
 
-public struct AccrueContextData {
-    public let userData: AccrueUserData?
-    public let settingsData: AccrueSettingsData
-    
-    public init(
-        userData: AccrueUserData? = nil,
-        settingsData: AccrueSettingsData = AccrueSettingsData()
-    ) {
-        self.userData = userData
-        self.settingsData = settingsData
-    }
-}
 
-public struct AccrueUserData {
-    public let referenceId: String?
-    public let email: String?
-    public let phoneNumber: String?
-    
-    public init(
-        referenceId: String? = nil,
-        email: String? = nil,
-        phoneNumber: String? = nil
-    ) {
-        self.referenceId = referenceId
-        self.email = email
-        self.phoneNumber = phoneNumber
-    }
-}
-
-public struct AccrueSettingsData {
-    public let disableLogout: Bool
-    public let loginRequiresReferenceId: Bool
-    public let skipPhoneInputScreen: Bool
-    
-    public init(
-        disableLogout: Bool = false,
-        loginRequiresReferenceId: Bool = false,
-        skipPhoneInputScreen: Bool = false
-    ) {
-        self.disableLogout = disableLogout
-        self.loginRequiresReferenceId = loginRequiresReferenceId
-        self.skipPhoneInputScreen = skipPhoneInputScreen
-    }
-}
-
-#if os(iOS)
+@available(macOS 10.15, *)
 public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
-    public var onSignIn: ((String) -> Void)?
+    public var onAction: ((String) -> Void)?
+      
     
-    
-    public init(url: URL, contextData: AccrueContextData? = nil, onSignIn: ((String) -> Void)? = nil) {
-        self.url = url
-        self.contextData = contextData
-        self.onSignIn = onSignIn
-    }
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
+           self.url = url
+           self.contextData = contextData
+           self.onAction = onAction
+   }
     public class Coordinator: NSObject, WKScriptMessageHandler {
         var parent: WebView
         
@@ -68,9 +24,9 @@ public struct WebView: UIViewRepresentable {
         }
         
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
-                parent.onSignIn?(userData)
-            }
+          if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
+              parent.onAction?(userData)
+          }
         }
     }
     public func makeCoordinator() -> Coordinator {
@@ -85,12 +41,7 @@ public struct WebView: UIViewRepresentable {
         
         
         // Inject JavaScript to set context data
-        if let contextData = contextData {
-            let contextDataScript = generateContextDataScript(contextData: contextData)
-            print(contextDataScript)
-            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
-            userContentController.addUserScript(userScript)
-        }
+        insertContextData(userController: userContentController)
         
         return webView
     }
@@ -98,7 +49,30 @@ public struct WebView: UIViewRepresentable {
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         
-        uiView.load(request)
+      
+        if url != uiView.url {
+            uiView.load(request)
+        }
+        
+        // Refresh context data
+        refreshContextData(webView: uiView)
+    }
+    
+    private func refreshContextData(webView: WKWebView) -> Void {
+        if let contextData = contextData {
+            
+            let contextDataScript = generateContextDataScript(contextData: contextData)
+            webView.evaluateJavaScript(contextDataScript)
+        }
+    }
+    
+    private func insertContextData(userController: WKUserContentController) -> Void {
+        if let contextData = contextData {
+            let contextDataScript = generateContextDataScript(contextData: contextData)
+            print(contextDataScript)
+            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+            userController.addUserScript(userScript)
+        }
     }
     // Generate JavaScript for Context Data
     private func generateContextDataScript(contextData: AccrueContextData) -> String {
@@ -106,21 +80,29 @@ public struct WebView: UIViewRepresentable {
         let settingsData = contextData.settingsData
         
         return """
-        window["\(AccrueWebEvents.EventHandlerName)"] = {
-            "contextData": {
-                "userData": {
-                    "referenceId": \(userData?.referenceId.map { "\"\($0)\"" } ?? "null"),
-                    "email": \(userData?.email.map { "\"\($0)\"" } ?? "null"),
-                    "phoneNumber": \(userData?.phoneNumber.map { "\"\($0)\"" } ?? "null")
-                },
-                "settingsData": {
-                    "disableLogout": \(settingsData.disableLogout),
-                    "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
-                    "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
-                }
-            }
-        };
-        """
+          (function() {
+                window["\(AccrueWebEvents.EventHandlerName)"] = {
+                    "contextData": {
+                        "userData": {
+                            "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
+                            "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
+                            "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                        },
+                        "settingsData": {
+                            "disableLogout": \(settingsData.disableLogout),
+                            "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
+                            "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
+                        }
+                    }
+                };
+                // Notify the web page that contextData has been updated
+                var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
+                  detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
+                });
+                window.dispatchEvent(event);
+            
+          })();
+          """
     }
 }
-#endif
+
