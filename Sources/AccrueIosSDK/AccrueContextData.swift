@@ -15,8 +15,8 @@ public class AccrueContextData: ObservableObject {
     public func updateUserData(referenceId: String, email: String, phoneNumber: String) {
         userData = AccrueUserData(referenceId: referenceId, email: email, phoneNumber: phoneNumber)
     }
-    public func updateSettingsData(disableLogout: Bool, loginRequiresReferenceId: Bool, skipPhoneInputScreen: Bool) {
-        settingsData = AccrueSettingsData(disableLogout: disableLogout, loginRequiresReferenceId: loginRequiresReferenceId, skipPhoneInputScreen: skipPhoneInputScreen)
+    public func updateSettingsData(disableLogout: Bool, loginRequiresReferenceId: Bool, skipPhoneInputScreen: Bool, shouldInheritAuthentication: Bool) {
+        settingsData = AccrueSettingsData(disableLogout: disableLogout, loginRequiresReferenceId: loginRequiresReferenceId, skipPhoneInputScreen: skipPhoneInputScreen, shouldInheritAuthentication: shouldInheritAuthentication)
     }
 
 }
