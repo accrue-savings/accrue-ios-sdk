@@ -91,7 +91,7 @@ public struct WebView: UIViewRepresentable {
                         "settingsData": {
                             "disableLogout": \(settingsData.disableLogout),
                             "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
-                            "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
+                            "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen),
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
                         }
                     }
