@@ -12,11 +12,11 @@ public class AccrueContextData: ObservableObject {
         self.userData = userData
         self.settingsData = settingsData
     }
-    public func updateUserData(referenceId: String, email: String, phoneNumber: String) {
+    public func updateUserData(referenceId: String?, email: String?, phoneNumber: String?) {
         userData = AccrueUserData(referenceId: referenceId, email: email, phoneNumber: phoneNumber)
     }
-    public func updateSettingsData(disableLogout: Bool, loginRequiresReferenceId: Bool, skipPhoneInputScreen: Bool, shouldInheritAuthentication: Bool) {
-        settingsData = AccrueSettingsData(disableLogout: disableLogout, loginRequiresReferenceId: loginRequiresReferenceId, skipPhoneInputScreen: skipPhoneInputScreen, shouldInheritAuthentication: shouldInheritAuthentication)
+    public func updateSettingsData(shouldInheritAuthentication: Bool) {
+        settingsData = AccrueSettingsData(shouldInheritAuthentication: shouldInheritAuthentication)
     }
 
 }
@@ -38,20 +38,9 @@ public struct AccrueUserData {
 }
 
 public struct AccrueSettingsData {
-    public let disableLogout: Bool
-    public let loginRequiresReferenceId: Bool
-    public let skipPhoneInputScreen: Bool
     public let shouldInheritAuthentication: Bool
     
-    public init(
-        disableLogout: Bool = false,
-        loginRequiresReferenceId: Bool = false,
-        skipPhoneInputScreen: Bool = false,
-        shouldInheritAuthentication: Bool = true
-    ) {
-        self.disableLogout = disableLogout
-        self.loginRequiresReferenceId = loginRequiresReferenceId
-        self.skipPhoneInputScreen = skipPhoneInputScreen
+    public init( shouldInheritAuthentication: Bool = true) {
         self.shouldInheritAuthentication = shouldInheritAuthentication
     }
 }
