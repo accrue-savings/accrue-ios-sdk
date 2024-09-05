@@ -61,7 +61,7 @@ public struct AccrueDeviceContextData {
     // iOS only
     public let modelId: String?
     
-    public init(sdkVersion: String?, brand: String?, deviceName: String?, deviceType: Double?, deviceYearClass: String?, isDevice: Bool, manufacturer: String?, modelName: String?, osBuildId: String?, osInternalBuildId: String?, osName: String?, osVersion: String?, modelId: String?) {
+    public init(sdkVersion: String?, brand: String?, deviceName: String?, deviceType: String?, deviceYearClass: Double?, isDevice: Bool, manufacturer: String?, modelName: String?, osBuildId: String?, osInternalBuildId: String?, osName: String?, osVersion: String?, modelId: String?) {
         self.sdkVersion = sdkVersion
         self.brand = brand
         self.deviceName = deviceName

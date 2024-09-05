@@ -78,7 +78,7 @@ public struct WebView: UIViewRepresentable {
     private func generateContextDataScript(contextData: AccrueContextData) -> String {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
-        let deviceContextData = AccrueDeviceContextData(sdkVersion: null, brand: "Apple", deviceName: UIDevice.current.name, deviceType: UIDevice.current.model, deviceYearClass: nill, isDevice: true, manufacturer: "Apple", modelName: UIDevice.current.model, osBuildId: DeviceHelper.getInternalOSVersion(), osInternalBuildId: DeviceHelper.getInternalOSVersion(), osName: UIDevice.current.systemName, osVersion: UIDevice.current.systemVersion, modelId: DeviceHelper.getModelIdentifier())
+        let deviceContextData = AccrueDeviceContextData(sdkVersion: nil, brand: "Apple", deviceName: UIDevice.current.name, deviceType: UIDevice.current.model, deviceYearClass: nil, isDevice: true, manufacturer: "Apple", modelName: UIDevice.current.model, osBuildId: DeviceHelper.getInternalOSVersion(), osInternalBuildId: DeviceHelper.getInternalOSVersion(), osName: UIDevice.current.systemName, osVersion: UIDevice.current.systemVersion, modelId: DeviceHelper.getModelIdentifier())
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
