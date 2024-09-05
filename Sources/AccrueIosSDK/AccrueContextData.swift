@@ -45,3 +45,35 @@ public struct AccrueSettingsData {
     }
 }
  
+public struct AccrueDeviceContextData {
+    public let sdkVersion: String?
+    public let brand: String?
+    public let deviceName: String?
+    public let deviceType: String?
+    public let deviceYearClass: Double?
+    public let isDevice: Bool
+    public let manufacturer: String?
+    public let modelName: String?
+    public let osBuildId: String?
+    public let osInternalBuildId: String?
+    public let osName: String?
+    public let osVersion: String?
+    // iOS only
+    public let modelId: String?
+    
+    public init(sdkVersion: String?, brand: String?, deviceName: String?, deviceType: Double?, deviceYearClass: String?, isDevice: Bool, manufacturer: String?, modelName: String?, osBuildId: String?, osInternalBuildId: String?, osName: String?, osVersion: String?, modelId: String?) {
+        self.sdkVersion = sdkVersion
+        self.brand = brand
+        self.deviceName = deviceName
+        self.deviceType = deviceType
+        self.deviceYearClass = deviceYearClass
+        self.isDevice = isDevice
+        self.manufacturer = manufacturer
+        self.modelName = modelName
+        self.osBuildId = osBuildId
+        self.osInternalBuildId = osInternalBuildId
+        self.osName = osName
+        self.osVersion = osVersion
+        self.modelId = modelId
+    }
+}

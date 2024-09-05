@@ -1,6 +1,6 @@
 import SwiftUI
 import WebKit
-
+import UIKit
 import Foundation
 
 
@@ -78,7 +78,7 @@ public struct WebView: UIViewRepresentable {
     private func generateContextDataScript(contextData: AccrueContextData) -> String {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
-        
+        let deviceContextData = AccrueDeviceContextData(sdkVersion: null, brand: "Apple", deviceName: UIDevice.current.name, deviceType: UIDevice.current.model, deviceYearClass: nill, isDevice: true, manufacturer: "Apple", modelName: UIDevice.current.model, osBuildId: DeviceHelper.getInternalOSVersion(), osInternalBuildId: DeviceHelper.getInternalOSVersion(), osName: UIDevice.current.systemName, osVersion: UIDevice.current.systemVersion, modelId: DeviceHelper.getModelIdentifier())
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
@@ -90,6 +90,21 @@ public struct WebView: UIViewRepresentable {
                         },
                         "settingsData": {
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
+                        },
+                        "deviceData": {
+                            "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
+                            "brand": "\(deviceContextData.brand ?? "null")",
+                            "deviceName": "\(deviceContextData.deviceName ?? "null")",
+                            "deviceType": \(deviceContextData.deviceType ?? 0),
+                            "deviceYearClass": \(deviceContextData.deviceYearClass ?? 0),
+                            "isDevice": \(deviceContextData.isDevice),
+                            "manufacturer": "\(deviceContextData.manufacturer ?? "null")",
+                            "modelName": "\(deviceContextData.modelName ?? "null")",
+                            "osBuildId": "\(deviceContextData.osBuildId ?? "null")",
+                            "osInternalBuildId": "\(deviceContextData.osInternalBuildId ?? "null")",
+                            "osName": "\(deviceContextData.osName ?? "null")",
+                            "osVersion": "\(deviceContextData.osVersion ?? "null")",
+                            "modelId": "\(deviceContextData.modelId ?? "null")"
                         }
                     }
                 };
