@@ -23,7 +23,7 @@ public struct AccrueWallet: View {
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
-        if let url = buildURL() {
+        if let url = buildURL(isSandbox: isSandbox, url: url) {
             WebView(url: url, contextData: contextData, onAction: onAction)
         } else {
             Text("Invalid URL")
