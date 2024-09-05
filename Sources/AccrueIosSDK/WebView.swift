@@ -89,9 +89,7 @@ public struct WebView: UIViewRepresentable {
                             "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
                         },
                         "settingsData": {
-                            "disableLogout": \(settingsData.disableLogout),
-                            "loginRequiresReferenceId": \(settingsData.loginRequiresReferenceId),
-                            "skipPhoneInputScreen": \(settingsData.skipPhoneInputScreen)
+                            "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
                         }
                     }
                 };

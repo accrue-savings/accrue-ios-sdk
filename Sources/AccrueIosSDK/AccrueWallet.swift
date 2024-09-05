@@ -5,21 +5,25 @@ import SwiftUI
 public struct AccrueWallet: View {
     public let merchantId: String
     public let redirectionToken: String?
+    public let isSandbox: Bool
+    public let url: String?
     public var onAction: ((String) -> Void)?
     @ObservedObject var contextData: AccrueContextData
     
     
-    public init(merchantId: String, redirectionToken: String?, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
-      self.merchantId = merchantId
-      self.redirectionToken = redirectionToken
-      self.contextData = contextData
-      self.onAction = onAction
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
+        self.merchantId = merchantId
+        self.redirectionToken = redirectionToken
+        self.contextData = contextData
+        self.isSandbox = isSandbox
+        self.url = url
+        self.onAction = onAction
     }
     
     @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
-        if let url = buildURL() {
+        if let url = buildURL(isSandbox: isSandbox, url: url) {
             WebView(url: url, contextData: contextData, onAction: onAction)
         } else {
             Text("Invalid URL")
@@ -29,8 +33,17 @@ public struct AccrueWallet: View {
         #endif
     }
     
-    private func buildURL() -> URL? {
-        var urlComponents = URLComponents(string: AppConstants.apiBaseUrl)
+    private func buildURL(isSandbox:Bool, url:String?) -> URL? {
+        let apiBaseUrl: String
+
+        if isSandbox {
+            apiBaseUrl = AppConstants.sandboxUrl
+        } else if let validUrl = url {
+            apiBaseUrl = validUrl
+        } else {
+            apiBaseUrl = AppConstants.productionUrl
+        }
+        var urlComponents = URLComponents(string: apiBaseUrl)
         urlComponents?.queryItems = [
             URLQueryItem(name: "merchantId", value: merchantId)
         ]
