@@ -1,6 +1,8 @@
+#if canImport(UIKit)
+
 import SwiftUI
 import WebKit
-
+import UIKit
 import Foundation
 
 
@@ -16,7 +18,7 @@ public struct WebView: UIViewRepresentable {
            self.contextData = contextData
            self.onAction = onAction
    }
-    public class Coordinator: NSObject, WKScriptMessageHandler {
+    public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         var parent: WebView
         
         public init(parent: WebView) {
@@ -28,6 +30,20 @@ public struct WebView: UIViewRepresentable {
               parent.onAction?(userData)
           }
         }
+        // WKNavigationDelegate method to intercept navigation actions
+        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+           if let url = navigationAction.request.url {
+               // Check if the URL is external
+               if url.host != parent.url.host {
+                   // Open the , URL in the external browser
+                   UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                   decisionHandler(.cancel) // Cancel the navigation in the webview
+                   return
+               }
+           }
+           // Allow navigation for internal links
+           decisionHandler(.allow)
+        }
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -35,6 +51,8 @@ public struct WebView: UIViewRepresentable {
     @available(iOS 13.0, *)
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        // Set the navigation delegate
+        webView.navigationDelegate = context.coordinator
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
@@ -103,4 +121,4 @@ public struct WebView: UIViewRepresentable {
           """
     }
 }
-
+#endif
