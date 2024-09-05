@@ -95,7 +95,7 @@ public struct WebView: UIViewRepresentable {
                             "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
                             "brand": "\(deviceContextData.brand ?? "null")",
                             "deviceName": "\(deviceContextData.deviceName ?? "null")",
-                            "deviceType": \(deviceContextData.deviceType ?? 0),
+                            "deviceType": \(deviceContextData.deviceType ?? ""),
                             "deviceYearClass": \(deviceContextData.deviceYearClass ?? 0),
                             "isDevice": \(deviceContextData.isDevice),
                             "manufacturer": "\(deviceContextData.manufacturer ?? "null")",
