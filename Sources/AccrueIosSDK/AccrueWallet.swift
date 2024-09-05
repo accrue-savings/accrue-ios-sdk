@@ -11,7 +11,7 @@ public struct AccrueWallet: View {
     @ObservedObject var contextData: AccrueContextData
     
     
-    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String?, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
         self.contextData = contextData
