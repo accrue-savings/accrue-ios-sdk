@@ -32,6 +32,7 @@ public struct WebView: UIViewRepresentable {
         }
         // WKNavigationDelegate method to intercept navigation actions
         public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            print(navigationAction.request.url)
            if let url = navigationAction.request.url {
                // Check if the URL is external
                if url.host != parent.url.host {
