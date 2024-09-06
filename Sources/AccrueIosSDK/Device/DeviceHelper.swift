@@ -29,10 +29,6 @@ class DeviceHelper {
         return modelCode ?? "Unknown"
     }
     static func getPackageVersion() -> String {
-        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
-           let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-            return version
-        }
-        return "Unkown"
+        return PackageVersion.version
     }
 }
