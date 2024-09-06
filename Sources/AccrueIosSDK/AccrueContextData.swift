@@ -46,6 +46,7 @@ public struct AccrueSettingsData {
 }
  
 public struct AccrueDeviceContextData {
+    public let sdk: String = "iOS"
     public let sdkVersion: String?
     public let brand: String?
     public let deviceName: String?

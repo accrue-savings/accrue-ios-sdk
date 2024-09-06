@@ -92,6 +92,7 @@ public struct WebView: UIViewRepresentable {
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
                         },
                         "deviceData": {
+                            "sdk": "\(deviceContextData.sdk)",
                             "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
                             "brand": "\(deviceContextData.brand ?? "null")",
                             "deviceName": "\(deviceContextData.deviceName ?? "null")",
