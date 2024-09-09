@@ -1,10 +1,11 @@
+
 import SwiftUI
 import WebKit
-
 import Foundation
+import UIKit
 
 
-@available(macOS 10.15, *)
+@available(iOS 13.0, macOS 10.15, *)
 public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
@@ -32,7 +33,6 @@ public struct WebView: UIViewRepresentable {
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
-    @available(iOS 13.0, *)
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         // Add the script message handler
@@ -45,7 +45,6 @@ public struct WebView: UIViewRepresentable {
         
         return webView
     }
-    @available(iOS 13.0, *)
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         
@@ -78,7 +77,7 @@ public struct WebView: UIViewRepresentable {
     private func generateContextDataScript(contextData: AccrueContextData) -> String {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
-        
+        let deviceContextData = AccrueDeviceContextData()
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
@@ -90,6 +89,22 @@ public struct WebView: UIViewRepresentable {
                         },
                         "settingsData": {
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
+                        },
+                        "deviceData": {
+                            "sdk": "\(deviceContextData.sdk)",
+                            "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
+                            "brand": "\(deviceContextData.brand ?? "null")",
+                            "deviceName": "\(deviceContextData.deviceName ?? "null")",
+                            "deviceType": "\(deviceContextData.deviceType ?? "")",
+                            "deviceYearClass": "\(deviceContextData.deviceYearClass ?? 0)",
+                            "isDevice": \(deviceContextData.isDevice),
+                            "manufacturer": "\(deviceContextData.manufacturer ?? "null")",
+                            "modelName": "\(deviceContextData.modelName ?? "null")",
+                            "osBuildId": "\(deviceContextData.osBuildId ?? "null")",
+                            "osInternalBuildId": "\(deviceContextData.osInternalBuildId ?? "null")",
+                            "osName": "\(deviceContextData.osName ?? "null")",
+                            "osVersion": "\(deviceContextData.osVersion ?? "null")",
+                            "modelId": "\(deviceContextData.modelId ?? "null")"
                         }
                     }
                 };

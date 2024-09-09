@@ -20,8 +20,8 @@ let package = Package(
         .target(
             name: "AccrueIosSDK",
             dependencies: [],
-            path: "Sources")
-        ,
+            path: "Sources"
+        ),
         .testTarget(
             name: "AccrueIosSDKTests",
             dependencies: ["AccrueIosSDK"],
