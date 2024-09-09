@@ -1,4 +1,8 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
+
 
 @available(macOS 10.15, *)
 public class AccrueContextData: ObservableObject {
@@ -62,19 +66,35 @@ public struct AccrueDeviceContextData {
     // iOS only
     public let modelId: String?
     
-    public init(sdkVersion: String?, brand: String?, deviceName: String?, deviceType: String?, deviceYearClass: Double?, isDevice: Bool, manufacturer: String?, modelName: String?, osBuildId: String?, osInternalBuildId: String?, osName: String?, osVersion: String?, modelId: String?) {
-        self.sdkVersion = sdkVersion
-        self.brand = brand
-        self.deviceName = deviceName
-        self.deviceType = deviceType
-        self.deviceYearClass = deviceYearClass
-        self.isDevice = isDevice
-        self.manufacturer = manufacturer
-        self.modelName = modelName
-        self.osBuildId = osBuildId
-        self.osInternalBuildId = osInternalBuildId
-        self.osName = osName
-        self.osVersion = osVersion
-        self.modelId = modelId
+    public init(sdkVersion: String? = nil, brand: String? = nil, deviceName: String? = nil, deviceType: String? = nil, deviceYearClass: Double? = 0, isDevice: Bool? = true, manufacturer: String? = nil, modelName: String? = nil, osBuildId: String? = nil, osInternalBuildId: String? = nil, osName: String? = nil, osVersion: String? = nil, modelId: String? = nil) {
+        #if canImport(UIKit)
+            self.sdkVersion = sdkVersion ?? DeviceHelper.getPackageVersion()
+            self.brand = brand ?? "Apple"
+            self.deviceName = deviceName ?? UIDevice.current.name
+            self.deviceType = deviceType ?? UIDevice.current.model
+            self.deviceYearClass = deviceYearClass
+            self.isDevice = isDevice ?? true
+            self.manufacturer = manufacturer ?? "Apple"
+            self.modelName = modelName ?? UIDevice.current.model
+            self.osBuildId = osBuildId ?? DeviceHelper.getInternalOSVersion()
+            self.osInternalBuildId = osInternalBuildId ?? DeviceHelper.getInternalOSVersion()
+            self.osName = osName ?? UIDevice.current.systemName
+            self.osVersion = osVersion ?? UIDevice.current.systemVersion
+            self.modelId = modelId ?? DeviceHelper.getModelIdentifier()
+        #else
+            self.sdkVersion = sdkVersion ?? DeviceHelper.getPackageVersion()
+            self.brand = brand ?? "Apple"
+            self.deviceName = deviceName
+            self.deviceType = deviceType
+            self.deviceYearClass = deviceYearClass
+            self.isDevice = isDevice ?? true
+            self.manufacturer = manufacturer ?? "Apple"
+            self.modelName = modelName
+            self.osBuildId = osBuildId ?? DeviceHelper.getInternalOSVersion()
+            self.osInternalBuildId = osInternalBuildId ?? DeviceHelper.getInternalOSVersion()
+            self.osName = osName
+            self.osVersion = osVersion
+            self.modelId = modelId ?? DeviceHelper.getModelIdentifier()
+        #endif
     }
 }
