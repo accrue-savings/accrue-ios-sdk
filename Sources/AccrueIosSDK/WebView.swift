@@ -30,24 +30,29 @@ public struct WebView: UIViewRepresentable {
               parent.onAction?(userData)
           }
         }
-       
-       // Handle popups or window.open calls in the web view
-       public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-           
-           if let url = navigationAction.request.url {
-               print("window.open url -> : \(url)")
-               let shouldOpen = shouldOpenExternally(url: url)
-               print("should open -> : \(shouldOpen)")
-               if shouldOpen {
-                   if UIApplication.shared.canOpenURL(url) {
-                       UIApplication.shared.open(url)
-                   } else {
-                       print("Cannot open URL: \(url.absoluteString)")
+        // Intercept navigation actions for internal vs external URLs
+       public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+           // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
+           print("navigationType ->: \(navigationAction.navigationType)")
+           if navigationAction.navigationType == .linkActivated {
+               if let url = navigationAction.request.url {
+                   // Check if the URL is external (i.e., different from the original host)
+                   print("internal vs external url -> : \(url)")
+                   print("parent -> : \(parent.url.host)")
+                   let shouldOpen = shouldOpenExternally(url: url)
+                   print("should open -> : \(shouldOpen)")
+                   if shouldOpen {
+                       if UIApplication.shared.canOpenURL(url) {
+                           UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                       } else {
+                           print("Cannot open URL: \(url.absoluteString)")
+                       }
+                       decisionHandler(.cancel)
+                       return
                    }
-                   return nil
                }
            }
-           return nil
+           decisionHandler(.allow)
        }
        
        // Helper function to determine if the URL should be opened externally
