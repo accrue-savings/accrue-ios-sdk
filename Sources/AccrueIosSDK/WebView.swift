@@ -31,21 +31,38 @@ public struct WebView: UIViewRepresentable {
               parent.onAction?(userData)
           }
         }
-        // WKNavigationDelegate method to intercept navigation actions
-        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            print(navigationAction.request)
+        // Intercept navigation actions for internal vs external URLs
+       public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
            if let url = navigationAction.request.url {
-               // Check if the URL is external
-               if url.host != parent.url.host {
-                   // Open the , URL in the external browser
+               // Check if the URL is external (i.e., different from the original host)
+               if shouldOpenExternally(url: url) {
                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                   decisionHandler(.cancel) // Cancel the navigation in the webview
+                   decisionHandler(.cancel)
                    return
                }
            }
-           // Allow navigation for internal links
            decisionHandler(.allow)
-        }
+       }
+       
+       // Handle popups or window.open calls in the web view
+       public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+           if let url = navigationAction.request.url {
+               if shouldOpenExternally(url: url) {
+                   UIApplication.shared.open(url)
+                   return nil
+               }
+           }
+           return nil
+       }
+       
+       // Helper function to determine if the URL should be opened externally
+       private func shouldOpenExternally(url: URL) -> Bool {
+           // Only open external URLs (i.e., URLs not matching the parent WebView's host)
+           if let host = url.host {
+               return host != parent.url.host
+           }
+           return false
+       }
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
