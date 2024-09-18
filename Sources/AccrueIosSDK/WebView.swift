@@ -33,14 +33,12 @@ public struct WebView: UIViewRepresentable {
         // Intercept navigation actions for internal vs external URLs
        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
            // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
-           print("navigationType ->: \(navigationAction.navigationType)")
-           print("internal vs external url -> : \(navigationAction.request.url)")
-           print("parent -> : \(parent.url.host)")
            if navigationAction.navigationType == .linkActivated {
                if let url = navigationAction.request.url {
                    // Check if the URL is external (i.e., different from the original host)
                    if shouldOpenExternally(url: url) {
-                       UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                       openInAppBrowser(url: <#T##URL#>)
+                       // UIApplication.shared.open(url, options: [:], completionHandler: nil)
                        decisionHandler(.cancel)
                        return
                    }
@@ -56,6 +54,12 @@ public struct WebView: UIViewRepresentable {
                return host != parent.url.host
            }
            return false
+       }
+    // Open the URL in an in-app browser (SFSafariViewController)
+       private func openInAppBrowser(url: URL) {
+           guard let viewController = UIApplication.shared.windows.first?.rootViewController else { return }
+           let safariVC = SFSafariViewController(url: url)
+           viewController.present(safariVC, animated: true, completion: nil)
        }
     }
     public func makeCoordinator() -> Coordinator {
