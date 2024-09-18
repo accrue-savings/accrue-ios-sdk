@@ -37,7 +37,7 @@ public struct WebView: UIViewRepresentable {
                if let url = navigationAction.request.url {
                    // Check if the URL is external (i.e., different from the original host)
                    if shouldOpenExternally(url: url) {
-                       openInAppBrowser(url: <#T##URL#>)
+                       openInAppBrowser(url: url)
                        // UIApplication.shared.open(url, options: [:], completionHandler: nil)
                        decisionHandler(.cancel)
                        return
