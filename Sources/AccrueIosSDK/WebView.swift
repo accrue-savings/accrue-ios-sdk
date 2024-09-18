@@ -34,19 +34,13 @@ public struct WebView: UIViewRepresentable {
        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
            // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
            print("navigationType ->: \(navigationAction.navigationType)")
+           print("internal vs external url -> : \(navigationAction.request.url)")
+           print("parent -> : \(parent.url.host)")
            if navigationAction.navigationType == .linkActivated {
                if let url = navigationAction.request.url {
                    // Check if the URL is external (i.e., different from the original host)
-                   print("internal vs external url -> : \(url)")
-                   print("parent -> : \(parent.url.host)")
-                   let shouldOpen = shouldOpenExternally(url: url)
-                   print("should open -> : \(shouldOpen)")
-                   if shouldOpen {
-                       if UIApplication.shared.canOpenURL(url) {
-                           UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                       } else {
-                           print("Cannot open URL: \(url.absoluteString)")
-                       }
+                   if shouldOpenExternally(url: url) {
+                       UIApplication.shared.open(url, options: [:], completionHandler: nil)
                        decisionHandler(.cancel)
                        return
                    }
