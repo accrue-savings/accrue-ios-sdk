@@ -30,26 +30,6 @@ public struct WebView: UIViewRepresentable {
               parent.onAction?(userData)
           }
         }
-        // Intercept navigation actions for internal vs external URLs
-       public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-           if let url = navigationAction.request.url {
-               // Check if the URL is external (i.e., different from the original host)
-               print("internal vs external url -> : \(url)")
-               print("parent -> : \(parent.url.host)")
-               let shouldOpen = shouldOpenExternally(url: url)
-               print("should open -> : \(shouldOpen)")
-               if shouldOpen {
-                   if UIApplication.shared.canOpenURL(url) {
-                       UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                   } else {
-                       print("Cannot open URL: \(url.absoluteString)")
-                   }
-                   decisionHandler(.cancel)
-                   return
-               }
-           }
-           decisionHandler(.allow)
-       }
        
        // Handle popups or window.open calls in the web view
        public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
