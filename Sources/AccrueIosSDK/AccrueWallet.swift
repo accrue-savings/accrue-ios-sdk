@@ -1,5 +1,4 @@
 import SwiftUI
-
  
 @available(macOS 10.15, *)
 public struct AccrueWallet: View {
@@ -20,7 +19,6 @@ public struct AccrueWallet: View {
         self.onAction = onAction
     }
     
-    @available(macOS 10.15, *)
     public var body: some View {
         #if os(iOS)
         if let url = buildURL(isSandbox: isSandbox, url: url) {
@@ -54,5 +52,4 @@ public struct AccrueWallet: View {
         
         return urlComponents?.url
     }
-}
- 
+} 
