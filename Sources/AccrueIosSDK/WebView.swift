@@ -4,6 +4,7 @@ import SwiftUI
 import WebKit
 import UIKit
 import Foundation
+import SafariServices
 
 
 @available(iOS 13.0, macOS 10.15, *)
