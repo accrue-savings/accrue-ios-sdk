@@ -4,7 +4,6 @@ import SwiftUI
 import WebKit
 import UIKit
 import Foundation
-import UIKit
 
 
 @available(iOS 13.0, macOS 10.15, *)
@@ -40,7 +39,11 @@ public struct WebView: UIViewRepresentable {
                let shouldOpen = shouldOpenExternally(url: url)
                print("should open -> : \(shouldOpen)")
                if shouldOpen {
-                   UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                   if UIApplication.shared.canOpenURL(url) {
+                       UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                   } else {
+                       print("Cannot open URL: \(url.absoluteString)")
+                   }
                    decisionHandler(.cancel)
                    return
                }
@@ -56,7 +59,11 @@ public struct WebView: UIViewRepresentable {
                let shouldOpen = shouldOpenExternally(url: url)
                print("should open -> : \(shouldOpen)")
                if shouldOpen {
-                   UIApplication.shared.open(url)
+                   if UIApplication.shared.canOpenURL(url) {
+                       UIApplication.shared.open(url)
+                   } else {
+                       print("Cannot open URL: \(url.absoluteString)")
+                   }
                    return nil
                }
            }
