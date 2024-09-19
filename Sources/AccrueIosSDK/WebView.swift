@@ -48,6 +48,20 @@ public struct WebView: UIViewRepresentable {
            }
            decisionHandler(.allow)
        }
+        
+        // Handle popups or window.open calls in the web view
+           public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+               print("HEyyyyy window.open here: \(navigationAction.navigationType)")
+               print("navigationAction.request.url: \(navigationAction.request.url)")
+               if let url = navigationAction.request.url {
+                   if shouldOpenExternally(url: url) {
+                       // Open the link in an in-app browser (SFSafariViewController)
+                       openInAppBrowser(url: url)
+                       return nil
+                   }
+               }
+               return nil
+           }
        
        // Helper function to determine if the URL should be opened externally
        private func shouldOpenExternally(url: URL) -> Bool {
