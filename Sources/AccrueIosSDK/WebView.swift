@@ -12,13 +12,13 @@ public struct WebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-      
+    
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
-           self.url = url
-           self.contextData = contextData
-           self.onAction = onAction
-   }
+        self.url = url
+        self.contextData = contextData
+        self.onAction = onAction
+    }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: WebView
         
@@ -27,56 +27,55 @@ public struct WebView: UIViewRepresentable {
         }
         
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-          if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
-              parent.onAction?(userData)
-          }
+            if message.name == AccrueWebEvents.EventHandlerName, let userData = message.body as? String {
+                parent.onAction?(userData)
+            }
         }
         // Intercept navigation actions for internal vs external URLs
-       public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-           // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
-           print("navigation type: \(navigationAction.navigationType)")
-           print("navigationAction.request.url: \(navigationAction.request.url)")
-           if navigationAction.navigationType == .linkActivated {
-               if let url = navigationAction.request.url {
-                   // Check if the URL is external (i.e., different from the original host)
-                   if shouldOpenExternally(url: url) {
-                       openInAppBrowser(url: url)
-                       decisionHandler(.cancel)
-                       return
-                   }
-               }
-           }
-           decisionHandler(.allow)
-       }
+        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
+            if navigationAction.navigationType == .linkActivated {
+                if let url = navigationAction.request.url {
+                    // Check if the URL is external (i.e., different from the original host)
+                    if shouldOpenExternally(url: url) {
+                        print("Link clicked, openning In-App Browser")
+                        openInAppBrowser(url: url)
+                        decisionHandler(.cancel)
+                        return
+                    }
+                }
+            }
+            decisionHandler(.allow)
+        }
         
         // Handle popups or window.open calls in the web view
-           public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-               print("HEyyyyy window.open here: \(navigationAction.navigationType)")
-               print("navigationAction.request.url: \(navigationAction.request.url)")
-               if let url = navigationAction.request.url {
-                   if shouldOpenExternally(url: url) {
-                       // Open the link in an in-app browser (SFSafariViewController)
-                       openInAppBrowser(url: url)
-                       return nil
-                   }
-               }
-               return nil
-           }
-       
-       // Helper function to determine if the URL should be opened externally
-       private func shouldOpenExternally(url: URL) -> Bool {
-           // Only open external URLs (i.e., URLs not matching the parent WebView's host)
-           if let host = url.host {
-               return host != parent.url.host
-           }
-           return false
-       }
-    // Open the URL in an in-app browser (SFSafariViewController)
-       private func openInAppBrowser(url: URL) {
-           guard let viewController = UIApplication.shared.windows.first?.rootViewController else { return }
-           let safariVC = SFSafariViewController(url: url)
-           viewController.present(safariVC, animated: true, completion: nil)
-       }
+        public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            
+            if let url = navigationAction.request.url {
+                if shouldOpenExternally(url: url) {
+                    print("Pop Up triggered, openning In-App Browser")
+                    // Open the link in an in-app browser (SFSafariViewController)
+                    openInAppBrowser(url: url)
+                    return nil
+                }
+            }
+            return nil
+        }
+        
+        // Helper function to determine if the URL should be opened externally
+        private func shouldOpenExternally(url: URL) -> Bool {
+            // Only open external URLs (i.e., URLs not matching the parent WebView's host)
+            if let host = url.host {
+                return host != parent.url.host
+            }
+            return false
+        }
+        // Open the URL in an in-app browser (SFSafariViewController)
+        private func openInAppBrowser(url: URL) {
+            guard let viewController = UIApplication.shared.windows.first?.rootViewController else { return }
+            let safariVC = SFSafariViewController(url: url)
+            viewController.present(safariVC, animated: true, completion: nil)
+        }
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -100,7 +99,7 @@ public struct WebView: UIViewRepresentable {
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         
-      
+        
         if url != uiView.url {
             uiView.load(request)
         }
