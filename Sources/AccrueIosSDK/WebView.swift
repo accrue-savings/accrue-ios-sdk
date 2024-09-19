@@ -19,7 +19,7 @@ public struct WebView: UIViewRepresentable {
            self.contextData = contextData
            self.onAction = onAction
    }
-    public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+    public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: WebView
         
         public init(parent: WebView) {
