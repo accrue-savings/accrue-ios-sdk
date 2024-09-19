@@ -85,6 +85,8 @@ public struct WebView: UIViewRepresentable {
         let webView = WKWebView()
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
