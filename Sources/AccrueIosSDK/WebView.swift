@@ -35,7 +35,7 @@ public struct WebView: UIViewRepresentable {
        public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
            // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
            print("navigation type: \(navigationAction.navigationType)")
-           print("navigationAction.request.url: \(.navigationAction.request.url)")
+           print("navigationAction.request.url: \(navigationAction.request.url)")
            if navigationAction.navigationType == .linkActivated {
                if let url = navigationAction.request.url {
                    // Check if the URL is external (i.e., different from the original host)
