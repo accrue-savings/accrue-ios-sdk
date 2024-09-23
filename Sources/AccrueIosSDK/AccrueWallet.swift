@@ -1,5 +1,5 @@
 import SwiftUI
- 
+
 @available(macOS 10.15, *)
 public struct AccrueWallet: View {
     public let merchantId: String
@@ -20,20 +20,20 @@ public struct AccrueWallet: View {
     }
     
     public var body: some View {
-        #if os(iOS)
+#if os(iOS)
         if let url = buildURL(isSandbox: isSandbox, url: url) {
             WebView(url: url, contextData: contextData, onAction: onAction)
         } else {
             Text("Invalid URL")
         }
-        #else
+#else
         Text("Platform not supported")
-        #endif
+#endif
     }
     
     private func buildURL(isSandbox:Bool, url:String?) -> URL? {
         let apiBaseUrl: String
-
+        
         if isSandbox {
             apiBaseUrl = AppConstants.sandboxUrl
         } else if let validUrl = url {
@@ -52,4 +52,4 @@ public struct AccrueWallet: View {
         
         return urlComponents?.url
     }
-} 
+}
