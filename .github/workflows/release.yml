@@ -15,7 +15,7 @@ permissions:
   pull-requests: 'write'
 
 jobs:
-  release:
+  version:
     name: Release Version
     runs-on: ubuntu-latest
     outputs:
@@ -23,6 +23,9 @@ jobs:
       from_tag: ${{ steps.semver.outputs.next }}
       to_tag: ${{ steps.semver.outputs.current }}
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        
       - name: Get Next Version
         id: semver
         uses: ietf-tools/semver-action@v1
@@ -32,6 +35,21 @@ jobs:
           skipInvalidTags: true
           patchList: chore, fix, bugfix, perf, refactor, test, tests, ci
           maxTagsToFetch: 40
+
+      - name: Update PackageVersion file
+        run: |
+          NEXT_VERSION=$(echo ${{ steps.semver.outputs.next }} | cut -d v -f 2)
+          cat <<EOF > ./PackageVersion.swift
+          public struct PackageVersion {
+            public static let version = "${NEXT_VERSION}"
+          }
+          EOF
+          git config --global user.name "Github Workflow"
+          git config --global user.email "githubworkflow@accruemoney.com"
+          git add -A
+          git commit -m 'build:updating PackageVersion.swift [skip ci]'
+          git push origin main
+          sleep 10
 
       - name: Create Pre-release
         uses: softprops/action-gh-release@v2
@@ -52,10 +70,17 @@ jobs:
           writeToFile: false
           includeRefIssues: false
 
+  create-release:
+    name: create-release
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.semver.outputs.next }}
-          body: ${{ steps.changelog.outputs.changes }}
+          tag_name: ${{ needs.version.outputs.version }}
+          body: ${{ needs.version.outputs.body }}
           prerelease: false
           make_latest: true
