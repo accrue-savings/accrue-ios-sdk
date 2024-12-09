@@ -129,6 +129,7 @@ public struct WebView: UIViewRepresentable {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
         let deviceContextData = AccrueDeviceContextData()
+        let additionalDataJSON = parseDictionaryToJSONString(contextData.userData.additionalData)
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
@@ -137,6 +138,7 @@ public struct WebView: UIViewRepresentable {
                             "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
                             "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
                             "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                            "additionalData": \(additionalDataJSON)
                         },
                         "settingsData": {
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
