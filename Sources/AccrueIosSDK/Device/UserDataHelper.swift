@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Otavio Henrique Pires Costa on 05/09/24.
-//
-
 import Foundation
 
 class UserDataHelper {
