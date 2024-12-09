@@ -129,7 +129,7 @@ public struct WebView: UIViewRepresentable {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
         let deviceContextData = AccrueDeviceContextData()
-        let additionalDataJSON = parseDictionaryToJSONString(contextData.userData.additionalData)
+        let additionalDataJSON = DeviceHelper.parseDictionaryToJSONString(contextData.userData.additionalData)
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
