@@ -85,6 +85,7 @@ public struct WebView: UIViewRepresentable {
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        webView.isInspectable = true
         
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
