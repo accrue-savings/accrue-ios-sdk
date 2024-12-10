@@ -102,10 +102,6 @@ public struct WebView: UIViewRepresentable {
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         
-        print("Old url", url)
-        print("New Url", uiView.url)
-        print("Are diffent", url != uiView.url)
-        
         if url != uiView.url {
             uiView.load(request)
         }

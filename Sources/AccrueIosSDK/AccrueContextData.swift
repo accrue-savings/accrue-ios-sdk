@@ -19,9 +19,6 @@ public class AccrueContextData: ObservableObject {
     public func updateUserData(referenceId: String?, email: String?, phoneNumber: String?, additionalData: [String: String]?) {
         userData = AccrueUserData(referenceId: referenceId, email: email, phoneNumber: phoneNumber, additionalData: additionalData)
     }
-    public func clearUserData() {
-        userData = AccrueUserData()
-    }
     public func updateSettingsData(shouldInheritAuthentication: Bool) {
         settingsData = AccrueSettingsData(shouldInheritAuthentication: shouldInheritAuthentication)
     }
