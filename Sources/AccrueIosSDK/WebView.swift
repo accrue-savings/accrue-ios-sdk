@@ -112,6 +112,7 @@ public struct WebView: UIViewRepresentable {
         if let contextData = contextData {
             
             let contextDataScript = generateContextDataScript(contextData: contextData)
+            print("Refreshing contextData: \(contextDataScript)")
             webView.evaluateJavaScript(contextDataScript)
         }
     }
@@ -119,7 +120,7 @@ public struct WebView: UIViewRepresentable {
     private func insertContextData(userController: WKUserContentController) -> Void {
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
-            print(contextDataScript)
+            print("Inserting contextData: \(contextDataScript)")
             let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
             userController.addUserScript(userScript)
         }
