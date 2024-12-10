@@ -103,10 +103,6 @@ public struct WebView: UIViewRepresentable {
         let request = URLRequest(url: url)
         
         
-        if url != uiView.url {
-            uiView.load(request)
-        }
-        
         // Refresh context data
         refreshContextData(webView: uiView)
     }
