@@ -121,7 +121,7 @@ public struct WebView: UIViewRepresentable {
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
             print("Inserting contextData: \(contextDataScript)")
-            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             userController.addUserScript(userScript)
         }
     }
