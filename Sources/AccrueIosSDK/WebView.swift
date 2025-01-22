@@ -154,6 +154,7 @@ public struct WebView: UIViewRepresentable {
         }, 0);
         """
         
+        print("Sending data: \(String(script))")
         // Inject the JavaScript into the WebView
         webView?.evaluateJavaScript(script) { result, error in
             if let error = error {
