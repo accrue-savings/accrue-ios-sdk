@@ -27,7 +27,7 @@ public struct AccrueWallet: View {
     public var body: some View {
 #if os(iOS)
         if let url = buildURL(isSandbox: isSandbox, url: url) {
-            WebView(url: url, contextData: contextData, onAction: onAction, webViewRef: $webView).onAppear {
+            WebView(url: url, contextData: contextData, onAction: onAction).onAppear {
                 // Assign the WebView instance to the local state variable
                 self.webViewInstance = WebView(
                     url: url,
