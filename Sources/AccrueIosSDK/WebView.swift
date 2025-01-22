@@ -13,6 +13,8 @@ public struct WebView: UIViewRepresentable {
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
     
+    private var webView: WKWebView?
+    
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
         self.url = url
@@ -21,6 +23,7 @@ public struct WebView: UIViewRepresentable {
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: WebView
+        weak var webView: WKWebView?
         
         public init(parent: WebView) {
             self.parent = parent
@@ -82,6 +85,7 @@ public struct WebView: UIViewRepresentable {
     }
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        self.webView = webView
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
@@ -107,6 +111,59 @@ public struct WebView: UIViewRepresentable {
         // Refresh context data
         refreshContextData(webView: uiView)
     }
+    
+    public func sendCustomEventGoToHomeScreen() {
+        sendCustomEvent(
+            eventName: "__GO_TO_HOME_SCREEN",
+            arguments: ""
+        )
+    }
+    
+    public func sendCustomEvent(
+        eventName: String,
+        arguments: String = "",
+        options: [String: String]? = nil
+    ) {
+        guard let webView = self.webView else {
+            print("WebView is not initialized")
+            return
+        }
+        injectFunctionCall(
+            webView: self.webView,
+            functionIdentifier: eventName,
+            functionArguments: arguments,
+            options: options
+        )
+    }
+
+    
+    private func injectFunctionCall(
+        webView: WKWebView?,
+        functionIdentifier: String,
+        functionArguments: String,
+        options: [String: String]? = nil
+    ) {
+        // Prepare the JavaScript snippet
+        let prependScript = options?["prepend"] ?? ""
+        let script = """
+        \(prependScript.isEmpty ? "" : "\(prependScript);")
+        setTimeout(function() {
+            if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                window.\(functionIdentifier)(\(functionArguments));
+            }
+        }, 0);
+        """
+        
+        // Inject the JavaScript into the WebView
+        webView?.evaluateJavaScript(script) { result, error in
+            if let error = error {
+                print("JavaScript injection error: \(error.localizedDescription)")
+            } else {
+                print("JavaScript executed successfully: \(String(describing: result))")
+            }
+        }
+    }
+    
     
     private func refreshContextData(webView: WKWebView) -> Void {
         if let contextData = contextData {

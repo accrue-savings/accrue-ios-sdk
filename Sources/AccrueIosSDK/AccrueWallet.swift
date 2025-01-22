@@ -8,6 +8,10 @@ public struct AccrueWallet: View {
     public let url: String?
     public var onAction: ((String) -> Void)?
     @ObservedObject var contextData: AccrueContextData
+    public var externalHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
+#if os(iOS)
+    @State private var webViewInstance: WebView? // Reference to the custom WebView instance
+#endif
     
     
     public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
@@ -22,7 +26,18 @@ public struct AccrueWallet: View {
     public var body: some View {
 #if os(iOS)
         if let url = buildURL(isSandbox: isSandbox, url: url) {
-            WebView(url: url, contextData: contextData, onAction: onAction)
+            WebView(url: url, contextData: contextData, onAction: onAction, webViewRef: $webView).onAppear {
+                // Assign the WebView instance to the local state variable
+                self.webViewInstance = WebView(
+                    url: url,
+                    contextData: contextData,
+                    onAction: onAction
+                )
+                // Expose handleEvent logic to the parent
+                externalHandleEvent?({ eventType in
+                    self.handleEvent(eventType: eventType)
+                })
+            }
         } else {
             Text("Invalid URL")
         }
@@ -30,6 +45,15 @@ public struct AccrueWallet: View {
         Text("Platform not supported")
 #endif
     }
+    
+    private func handleEvent(event: String) {
+#if os(iOS)
+        if event == "AccrueTabPressed" {
+            self.webViewInstance?.sendCustomEventGoToHomeScreen()
+        }
+#endif
+    }
+       
     
     private func buildURL(isSandbox:Bool, url:String?) -> URL? {
         let apiBaseUrl: String
@@ -52,4 +76,5 @@ public struct AccrueWallet: View {
         
         return urlComponents?.url
     }
+        
 }
