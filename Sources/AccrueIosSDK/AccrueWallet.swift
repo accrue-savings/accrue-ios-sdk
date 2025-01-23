@@ -7,24 +7,21 @@ public struct AccrueWallet: View {
     public let isSandbox: Bool
     public let url: String?
     public var onAction: ((String) -> Void)?
+    
     @ObservedObject var contextData: AccrueContextData
 #if os(iOS)
-    public var onHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
-
     @State private var webViewCoordinator: WebView.Coordinator? // Store the Coordinator reference
 #endif
     
     
-    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil,  onHandleEvent: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
         self.contextData = contextData
         self.isSandbox = isSandbox
         self.url = url
         self.onAction = onAction
-#if os(iOS)
-        self.onHandleEvent = onHandleEvent
-#endif
+ 
     }
     
     public var body: some View {
@@ -32,12 +29,7 @@ public struct AccrueWallet: View {
         if let url = buildURL(isSandbox: isSandbox, url: url) {
             WebView(url: url, contextData: contextData, onAction: onAction, onCoordinatorCreated: { coordinator in
                 self.webViewCoordinator = coordinator // Capture the Coordinator
-            }).onAppear {
-                // Pass the internal handleEvent logic to the parent via onHandleEvent
-                              if let onHandleEvent = onHandleEvent {
-                                  onHandleEvent(self.internalHandleEvent(_:))
-                              }
-            }
+            })
         } else {
             Text("Invalid URL")
         }
@@ -46,7 +38,7 @@ public struct AccrueWallet: View {
 #endif
     }
     
-    private func internalHandleEvent(event: String) {
+    public func handleEvent(event: String) {
 #if os(iOS)
         print("Calling internalHandleEvent...")
         if event == "AccrueTabPressed" {
