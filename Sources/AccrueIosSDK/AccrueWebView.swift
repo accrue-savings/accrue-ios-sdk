@@ -203,6 +203,7 @@ public struct AccrueWebView: UIViewRepresentable {
         let script = """
         (function() {
             alert("Testing") 
+            return true
         })();
         """
         
