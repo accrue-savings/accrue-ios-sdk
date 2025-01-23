@@ -9,20 +9,19 @@ public struct AccrueWallet: View {
     public var onAction: ((String) -> Void)?
     @ObservedObject var contextData: AccrueContextData
 #if os(iOS)
-    @State public var externalHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
+    @State public var handleEvent: ((String) -> Void)? // Closure to expose handleEvent
 
     @State private var webViewCoordinator: WebView.Coordinator? // Store the Coordinator reference
 #endif
     
     
-    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil, externalHandleEvent: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
         self.contextData = contextData
         self.isSandbox = isSandbox
         self.url = url
         self.onAction = onAction
-        self.externalHandleEvent = externalHandleEvent
     }
     
     public var body: some View {
@@ -32,7 +31,7 @@ public struct AccrueWallet: View {
                 self.webViewCoordinator = coordinator // Capture the Coordinator
             }).onAppear {
                 // Expose handleEvent logic to the parent
-                externalHandleEvent = self.handleEvent
+                handleEvent = self.internalHandleEvent
             }
         } else {
             Text("Invalid URL")
@@ -42,7 +41,7 @@ public struct AccrueWallet: View {
 #endif
     }
     
-    private func handleEvent(event: String) {
+    private func internalHandleEvent(event: String) {
 #if os(iOS)
         if event == "AccrueTabPressed" {
             self.webViewCoordinator?.sendCustomEventGoToHomeScreen()
