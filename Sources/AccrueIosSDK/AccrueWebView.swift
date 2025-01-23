@@ -204,30 +204,7 @@ public struct AccrueWebView: UIViewRepresentable {
                  (function() {
                        window["\(AccrueWebEvents.EventHandlerName)"] = {
                            "contextData": {
-                               "userData": {
-                                   "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
-                                   "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
-                                   "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
-                               },
-                               "settingsData": {
-                                   "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
-                               },
-                               "deviceData": {
-                                   "sdk": "\(deviceContextData.sdk)",
-                                   "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
-                                   "brand": "\(deviceContextData.brand ?? "null")",
-                                   "deviceName": "\(deviceContextData.deviceName ?? "null")",
-                                   "deviceType": "\(deviceContextData.deviceType ?? "")",
-                                   "deviceYearClass": "\(deviceContextData.deviceYearClass ?? 0)",
-                                   "isDevice": \(deviceContextData.isDevice),
-                                   "manufacturer": "\(deviceContextData.manufacturer ?? "null")",
-                                   "modelName": "\(deviceContextData.modelName ?? "null")",
-                                   "osBuildId": "\(deviceContextData.osBuildId ?? "null")",
-                                   "osInternalBuildId": "\(deviceContextData.osInternalBuildId ?? "null")",
-                                   "osName": "\(deviceContextData.osName ?? "null")",
-                                   "osVersion": "\(deviceContextData.osVersion ?? "null")",
-                                   "modelId": "\(deviceContextData.modelId ?? "null")"
-                               }
+                               
                            }
                        };
                        // Notify the web page that contextData has been updated
