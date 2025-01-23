@@ -185,32 +185,29 @@ public struct AccrueWebView: UIViewRepresentable {
     
     public func sendCustomEvent(
         eventName: String,
-        arguments: String = "",
-        options: [String: String]? = nil
+        arguments: String = ""
     ) {
         
         injectFunctionCall(
             functionIdentifier: eventName,
-            functionArguments: arguments,
-            options: options
+            functionArguments: arguments
         )
     }
 
     
     private func injectFunctionCall(
         functionIdentifier: String,
-        functionArguments: String,
-        options: [String: String]? = nil
+        functionArguments: String
     ) {
-        // Prepare the JavaScript snippet
-        let prependScript = options?["prepend"] ?? ""
+        
         let script = """
-        \(prependScript.isEmpty ? "" : "\(prependScript);")
-        setTimeout(function() {
-            if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
-                window.\(functionIdentifier)(\(functionArguments));
-            }
-        }, 0);
+        (function() {
+            setTimeout(function() {
+                if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                    window.\(functionIdentifier)(\(functionArguments));
+                }
+            }, 0);
+        })();
         """
         
         print("Sending data: \(String(script))")
