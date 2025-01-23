@@ -14,7 +14,7 @@ public struct AccrueWallet: View {
         let fallbackUrl = URL(string: "http://localhost:5173/webview")!
         let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
         
-        AccrueWebView(url: url, contextData: contextData, onAction: onAction)
+        return AccrueWebView(url: url, contextData: contextData, onAction: onAction)
     }
     #endif
  
