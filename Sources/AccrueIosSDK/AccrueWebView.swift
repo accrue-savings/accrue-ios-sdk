@@ -121,7 +121,7 @@ public struct AccrueWebView: UIViewRepresentable {
             
             print("Sending data: \(String(script))")
             // Inject the JavaScript into the WebView
-            webView.evaluateJavaScript(script) { result, error in
+            webView?.evaluateJavaScript(script) { result, error in
                 if let error = error {
                     print("JavaScript injection error: \(error.localizedDescription)")
                                if let nsError = error as? NSError {
