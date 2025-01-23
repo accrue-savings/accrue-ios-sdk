@@ -12,10 +12,11 @@ public struct AccrueWallet: View {
 #if os(iOS)
     private var WebViewComponent: AccrueWebView {
 
-        let url = buildURL(isSandbox: isSandbox, url: url)
+        let url = buildURL(isSandbox: isSandbox, url: url) ?? URLComponents(string: "http://localhost:5173/webview")?.url
+        
         AccrueWebView(url: url, contextData: contextData, onAction: onAction)
     }
-#endif
+    #endif
     
     
     public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
