@@ -6,17 +6,25 @@ import UIKit
 import Foundation
 import SafariServices
 
+class WeakReference<T: AnyObject> {
+    weak var value: T?
+    init(value: T) {
+        self.value = value
+    }
+}
 
 @available(iOS 13.0, macOS 10.15, *)
 public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
+    public var coordinatorReference: WeakReference<Coordinator>?
     
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil ) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, coordinatorReference: WeakReference<Coordinator>? = nil ) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
+        self.coordinatorReference = coordinatorReference
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView

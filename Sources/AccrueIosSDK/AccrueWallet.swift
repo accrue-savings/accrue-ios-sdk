@@ -41,7 +41,7 @@ public struct AccrueWallet: View {
 #if os(iOS)
         if event == "AccrueTabPressed" {
             print("AccrueTab is pressed")
-            WebViewComponent.makeCoordinator().sendCustomEventGoToHomeScreen()
+            WebViewComponent.coordinatorReference?.sendCustomEventGoToHomeScreen()
         }
 #endif
     }
