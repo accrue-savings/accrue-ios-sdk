@@ -207,6 +207,7 @@ public struct AccrueWebView: UIViewRepresentable {
                     window.\(functionIdentifier)(\(functionArguments));
                 }
             }, 0);
+            return "Script injected successfully";
         })();
         """
         
