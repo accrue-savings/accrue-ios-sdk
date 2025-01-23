@@ -8,8 +8,9 @@ public struct AccrueWallet: View {
     public let url: String?
     public var onAction: ((String) -> Void)?
     @ObservedObject var contextData: AccrueContextData
-    public var externalHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
 #if os(iOS)
+    @State public var externalHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
+
     @State private var webViewCoordinator: WebView.Coordinator? // Store the Coordinator reference
 #endif
     
