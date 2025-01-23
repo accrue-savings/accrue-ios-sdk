@@ -20,10 +20,10 @@ public struct AccrueWebView: UIViewRepresentable {
         self.onAction = onAction
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
-        var parent: WebView
+        var parent: AccrueWebView
         var webView: WKWebView?
         
-        public init(parent: WebView) {
+        public init(parent: AccrueWebView) {
             self.parent = parent
         }
         
