@@ -14,10 +14,9 @@ public struct AccrueWallet: View {
 
         if let url = buildURL(isSandbox: isSandbox, url: url) {
             AccrueWebView(url: url, contextData: contextData, onAction: onAction)
-        } else {
-            Text("Invalid URL")
+        }else {
+            AccrueWebView(url: "http://", contextData: contextData, onAction: onAction)
         }
-
     }
 #endif
     
