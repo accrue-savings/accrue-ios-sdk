@@ -13,7 +13,7 @@ public struct WebView: UIViewRepresentable {
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
     
-    @Binding var webView: Binding<WKWebView?> // Binding for the WKWebView reference
+    @Binding var webView: WKWebView? // Binding for the WKWebView reference
     
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
