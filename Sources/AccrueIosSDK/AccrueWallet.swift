@@ -14,8 +14,6 @@ public struct AccrueWallet: View {
 
         if let url = buildURL(isSandbox: isSandbox, url: url) {
             AccrueWebView(url: url, contextData: contextData, onAction: onAction)
-        }else {
-            AccrueWebView(url: "http://localhost:5173/webview/", contextData: contextData, onAction: onAction)
         }
     }
 #endif
