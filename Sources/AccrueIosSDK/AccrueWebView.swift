@@ -202,11 +202,7 @@ public struct AccrueWebView: UIViewRepresentable {
         
         let script = """
         (function() {
-            setTimeout(function() {
-                if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
-                    window.\(functionIdentifier)(\(functionArguments));
-                }
-            }, 0);
+            alert("Testing")
             return "Script injected successfully";
         })();
         """
