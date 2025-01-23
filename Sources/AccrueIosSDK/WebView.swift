@@ -13,7 +13,7 @@ public struct WebView: UIViewRepresentable {
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
     
-    public var webView: WKWebView?
+    @Binding var webView: Binding<WKWebView?> // Binding for the WKWebView reference
     
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
@@ -85,6 +85,7 @@ public struct WebView: UIViewRepresentable {
     }
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        
         self.webView = webView
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
