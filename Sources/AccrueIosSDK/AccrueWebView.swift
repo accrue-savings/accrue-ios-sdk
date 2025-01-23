@@ -12,7 +12,6 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    public var webView = WKWebView()
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil ) {
         self.url = url
@@ -79,15 +78,76 @@ public struct AccrueWebView: UIViewRepresentable {
         }
         
         
+        public func sendCustomEventGoToHomeScreen() {
+            print("Calling sendCustomEventGoToHomeScreen...")
+            sendCustomEvent(
+                eventName: "__GO_TO_HOME_SCREEN",
+                arguments: ""
+            )
+        }
+        
+        public func sendCustomEvent(
+            eventName: String,
+            arguments: String = ""
+        ) {
+            
+            injectFunctionCall(
+                functionIdentifier: eventName,
+                functionArguments: arguments
+            )
+        }
+
+        
+        private func injectFunctionCall(
+            functionIdentifier: String,
+            functionArguments: String
+        ) {
+            
+            let script = """
+                     (function() {
+                           window["\(AccrueWebEvents.EventHandlerName)"] = {
+                               "contextData": {
+                                   
+                               }
+                           };
+                           // Notify the web page that contextData has been updated
+                           var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
+                             detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
+                           });
+                           window.dispatchEvent(event);
+                       
+                     })();
+            """
+            
+            print("Sending data: \(String(script))")
+            // Inject the JavaScript into the WebView
+            webView.evaluateJavaScript(script) { result, error in
+                if let error = error {
+                    print("JavaScript injection error: \(error.localizedDescription)")
+                               if let nsError = error as? NSError {
+                                   print("Error Domain: \(nsError.domain)")
+                                   print("Error Code: \(nsError.code)")
+                                   if let userInfo = nsError.userInfo as? [String: Any] {
+                                       print("User Info: \(userInfo)")
+                                   }
+                               }
+                } else {
+                    print("JavaScript executed successfully: \(String(describing: result))")
+                }
+            }
+        }
+        
+        
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
-        
+        let webView = WKWebView()
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        context.coordinator.webView = webView
         
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
@@ -175,63 +235,5 @@ public struct AccrueWebView: UIViewRepresentable {
     }
     
     
-    public func sendCustomEventGoToHomeScreen() {
-        print("Calling sendCustomEventGoToHomeScreen...")
-        sendCustomEvent(
-            eventName: "__GO_TO_HOME_SCREEN",
-            arguments: ""
-        )
-    }
-    
-    public func sendCustomEvent(
-        eventName: String,
-        arguments: String = ""
-    ) {
-        
-        injectFunctionCall(
-            functionIdentifier: eventName,
-            functionArguments: arguments
-        )
-    }
-
-    
-    private func injectFunctionCall(
-        functionIdentifier: String,
-        functionArguments: String
-    ) {
-        
-        let script = """
-                 (function() {
-                       window["\(AccrueWebEvents.EventHandlerName)"] = {
-                           "contextData": {
-                               
-                           }
-                       };
-                       // Notify the web page that contextData has been updated
-                       var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
-                         detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
-                       });
-                       window.dispatchEvent(event);
-                   
-                 })();
-        """
-        
-        print("Sending data: \(String(script))")
-        // Inject the JavaScript into the WebView
-        webView.evaluateJavaScript(script) { result, error in
-            if let error = error {
-                print("JavaScript injection error: \(error.localizedDescription)")
-                           if let nsError = error as? NSError {
-                               print("Error Domain: \(nsError.domain)")
-                               print("Error Code: \(nsError.code)")
-                               if let userInfo = nsError.userInfo as? [String: Any] {
-                                   print("User Info: \(userInfo)")
-                               }
-                           }
-            } else {
-                print("JavaScript executed successfully: \(String(describing: result))")
-            }
-        }
-    }
 }
 #endif
