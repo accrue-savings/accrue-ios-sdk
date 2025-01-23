@@ -12,9 +12,8 @@ public struct AccrueWallet: View {
 #if os(iOS)
     private var WebViewComponent: AccrueWebView {
 
-        if let url = buildURL(isSandbox: isSandbox, url: url) {
-            AccrueWebView(url: url, contextData: contextData, onAction: onAction)
-        }
+        let url = buildURL(isSandbox: isSandbox, url: url)
+        AccrueWebView(url: url, contextData: contextData, onAction: onAction)
     }
 #endif
     
