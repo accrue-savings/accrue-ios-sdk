@@ -31,9 +31,7 @@ public struct AccrueWallet: View {
                 self.webViewCoordinator = coordinator // Capture the Coordinator
             }).onAppear {
                 // Expose handleEvent logic to the parent
-                externalHandleEvent?({ eventType in
-                    self.handleEvent(eventType: eventType)
-                })
+                externalHandleEvent = self.handleEvent
             }
         } else {
             Text("Invalid URL")
