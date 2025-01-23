@@ -10,7 +10,7 @@ public struct AccrueWallet: View {
     @ObservedObject var contextData: AccrueContextData
     public var externalHandleEvent: ((String) -> Void)? // Closure to expose handleEvent
 #if os(iOS)
-    @State private var webViewInstance: WebView? // Reference to the custom WebView instance
+    @State private var webViewCoordinator: WebView.Coordinator? // Store the Coordinator reference
 #endif
     
     
@@ -27,13 +27,9 @@ public struct AccrueWallet: View {
     public var body: some View {
 #if os(iOS)
         if let url = buildURL(isSandbox: isSandbox, url: url) {
-            WebView(url: url, contextData: contextData, onAction: onAction).onAppear {
-                // Assign the WebView instance to the local state variable
-                self.webViewInstance = WebView(
-                    url: url,
-                    contextData: contextData,
-                    onAction: onAction
-                )
+            WebView(url: url, contextData: contextData, onAction: onAction, onCoordinatorCreated: { coordinator in
+                self.webViewCoordinator = coordinator // Capture the Coordinator
+            }).onAppear {
                 // Expose handleEvent logic to the parent
                 externalHandleEvent?({ eventType in
                     self.handleEvent(eventType: eventType)
@@ -50,7 +46,7 @@ public struct AccrueWallet: View {
     private func handleEvent(event: String) {
 #if os(iOS)
         if event == "AccrueTabPressed" {
-            self.webViewInstance?.sendCustomEventGoToHomeScreen()
+            self.webViewCoordinator?.sendCustomEventGoToHomeScreen()
         }
 #endif
     }
