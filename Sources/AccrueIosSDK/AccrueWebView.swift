@@ -12,12 +12,13 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    public var webView = WKWebView()
+    public var webView = WKWebView
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil ) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
+        self.webView = WKWebView()
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
@@ -188,12 +189,8 @@ public struct AccrueWebView: UIViewRepresentable {
         arguments: String = "",
         options: [String: String]? = nil
     ) {
-        guard let webView = self.webView else {
-            print("WebView is not initialized")
-            return
-        }
+        
         injectFunctionCall(
-            webView: self.webView,
             functionIdentifier: eventName,
             functionArguments: arguments,
             options: options
@@ -202,7 +199,6 @@ public struct AccrueWebView: UIViewRepresentable {
 
     
     private func injectFunctionCall(
-        webView: WKWebView?,
         functionIdentifier: String,
         functionArguments: String,
         options: [String: String]? = nil
