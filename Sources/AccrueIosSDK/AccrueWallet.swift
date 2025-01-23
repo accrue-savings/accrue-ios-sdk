@@ -43,6 +43,7 @@ public struct AccrueWallet: View {
     
     private func internalHandleEvent(event: String) {
 #if os(iOS)
+        print("Calling internalHandleEvent...")
         if event == "AccrueTabPressed" {
             self.webViewCoordinator?.sendCustomEventGoToHomeScreen()
         }

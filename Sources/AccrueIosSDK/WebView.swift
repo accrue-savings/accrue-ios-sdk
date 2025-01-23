@@ -82,6 +82,7 @@ public struct WebView: UIViewRepresentable {
         
         
         public func sendCustomEventGoToHomeScreen() {
+            print("Calling sendCustomEventGoToHomeScreen...")
             sendCustomEvent(
                 eventName: "__GO_TO_HOME_SCREEN",
                 arguments: ""
