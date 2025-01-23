@@ -8,18 +8,16 @@ import SafariServices
 
 
 @available(iOS 13.0, macOS 10.15, *)
-public struct WebView: UIViewRepresentable {
+public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    public var onCoordinatorCreated: ((Coordinator) -> Void)? // Callback to expose the Coordinator
+    public var webView = WKWebView()
     
-    
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil,  onCoordinatorCreated: ((Coordinator) -> Void)? = nil ) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil ) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
-        self.onCoordinatorCreated = onCoordinatorCreated
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: WebView
@@ -81,66 +79,12 @@ public struct WebView: UIViewRepresentable {
         }
         
         
-        public func sendCustomEventGoToHomeScreen() {
-            print("Calling sendCustomEventGoToHomeScreen...")
-            sendCustomEvent(
-                eventName: "__GO_TO_HOME_SCREEN",
-                arguments: ""
-            )
-        }
-        
-        public func sendCustomEvent(
-            eventName: String,
-            arguments: String = "",
-            options: [String: String]? = nil
-        ) {
-            guard let webView = self.webView else {
-                print("WebView is not initialized")
-                return
-            }
-            injectFunctionCall(
-                webView: self.webView,
-                functionIdentifier: eventName,
-                functionArguments: arguments,
-                options: options
-            )
-        }
-
-        
-        private func injectFunctionCall(
-            webView: WKWebView?,
-            functionIdentifier: String,
-            functionArguments: String,
-            options: [String: String]? = nil
-        ) {
-            // Prepare the JavaScript snippet
-            let prependScript = options?["prepend"] ?? ""
-            let script = """
-            \(prependScript.isEmpty ? "" : "\(prependScript);")
-            setTimeout(function() {
-                if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
-                    window.\(functionIdentifier)(\(functionArguments));
-                }
-            }, 0);
-            """
-            
-            print("Sending data: \(String(script))")
-            // Inject the JavaScript into the WebView
-            webView?.evaluateJavaScript(script) { result, error in
-                if let error = error {
-                    print("JavaScript injection error: \(error.localizedDescription)")
-                } else {
-                    print("JavaScript executed successfully: \(String(describing: result))")
-                }
-            }
-        }
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        context.coordinator.webView = webView // Assign the WKWebView instance to the Coordinator
+        
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
@@ -228,6 +172,61 @@ public struct WebView: UIViewRepresentable {
             
           })();
           """
+    }
+    
+    
+    public func sendCustomEventGoToHomeScreen() {
+        print("Calling sendCustomEventGoToHomeScreen...")
+        sendCustomEvent(
+            eventName: "__GO_TO_HOME_SCREEN",
+            arguments: ""
+        )
+    }
+    
+    public func sendCustomEvent(
+        eventName: String,
+        arguments: String = "",
+        options: [String: String]? = nil
+    ) {
+        guard let webView = self.webView else {
+            print("WebView is not initialized")
+            return
+        }
+        injectFunctionCall(
+            webView: self.webView,
+            functionIdentifier: eventName,
+            functionArguments: arguments,
+            options: options
+        )
+    }
+
+    
+    private func injectFunctionCall(
+        webView: WKWebView?,
+        functionIdentifier: String,
+        functionArguments: String,
+        options: [String: String]? = nil
+    ) {
+        // Prepare the JavaScript snippet
+        let prependScript = options?["prepend"] ?? ""
+        let script = """
+        \(prependScript.isEmpty ? "" : "\(prependScript);")
+        setTimeout(function() {
+            if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                window.\(functionIdentifier)(\(functionArguments));
+            }
+        }, 0);
+        """
+        
+        print("Sending data: \(String(script))")
+        // Inject the JavaScript into the WebView
+        webView?.evaluateJavaScript(script) { result, error in
+            if let error = error {
+                print("JavaScript injection error: \(error.localizedDescription)")
+            } else {
+                print("JavaScript executed successfully: \(String(describing: result))")
+            }
+        }
     }
 }
 #endif

@@ -10,7 +10,15 @@ public struct AccrueWallet: View {
     
     @ObservedObject var contextData: AccrueContextData
 #if os(iOS)
-    @State private var webViewCoordinator: WebView.Coordinator? // Store the Coordinator reference
+    private var WebViewComponent: AccrueWebView {
+
+        if let url = buildURL(isSandbox: isSandbox, url: url) {
+            AccrueWebView(url: url, contextData: contextData, onAction: onAction)
+        } else {
+            Text("Invalid URL")
+        }
+
+    }
 #endif
     
     
@@ -21,28 +29,21 @@ public struct AccrueWallet: View {
         self.isSandbox = isSandbox
         self.url = url
         self.onAction = onAction
- 
     }
     
     public var body: some View {
 #if os(iOS)
-        if let url = buildURL(isSandbox: isSandbox, url: url) {
-            WebView(url: url, contextData: contextData, onAction: onAction, onCoordinatorCreated: { coordinator in
-                self.webViewCoordinator = coordinator // Capture the Coordinator
-            })
-        } else {
-            Text("Invalid URL")
-        }
-#else
-        Text("Platform not supported")
+        WebViewComponent
 #endif
     }
     
     public func handleEvent(event: String) {
+        
+        print("Calling internalHandleEvent...\(event)")
 #if os(iOS)
-        print("Calling internalHandleEvent...")
         if event == "AccrueTabPressed" {
-            self.webViewCoordinator?.sendCustomEventGoToHomeScreen()
+            print("AccrueTab is pressed")
+            WebViewComponent.sendCustomEventGoToHomeScreen()
         }
 #endif
     }
