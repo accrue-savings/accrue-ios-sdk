@@ -27,13 +27,11 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    public var webView: WKWebView
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
-        self.webView = WKWebView()
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
@@ -99,22 +97,22 @@ public struct AccrueWebView: UIViewRepresentable {
         Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
- 
+        let webView = WKWebView()
         // Set the navigation delegate
-        self.webView.navigationDelegate = context.coordinator
-        self.webView.uiDelegate = context.coordinator
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
         if #available(iOS 16.4, *) {
-            self.webView.isInspectable = true // Safe to use isInspectable here
+            webView.isInspectable = true // Safe to use isInspectable here
         }
         // Add the script message handler
-        let userContentController = self.webView.configuration.userContentController
+        let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
         
         
         // Inject JavaScript to set context data
         insertContextData(userController: userContentController)
         
-        return self.webView
+        return webView
     }
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
@@ -137,7 +135,7 @@ public struct AccrueWebView: UIViewRepresentable {
         if let contextData = contextData {
             
             let contextDataScript = generateContextDataScript(contextData: contextData)
-            self.webView.evaluateJavaScript(contextDataScript){ result, error in
+            webView.evaluateJavaScript(contextDataScript){ result, error in
                 if let error = error {
                     print("JavaScript injection error: \(error.localizedDescription)")
                                if let nsError = error as? NSError {
@@ -248,7 +246,7 @@ public struct AccrueWebView: UIViewRepresentable {
         """
         
        print("Script: \(script) ")
-        self.webView.evaluateJavaScript(script){ result, error in
+        webView.evaluateJavaScript(script){ result, error in
             if let error = error {
                 print("JavaScript injection error: \(error.localizedDescription)")
             } else {
