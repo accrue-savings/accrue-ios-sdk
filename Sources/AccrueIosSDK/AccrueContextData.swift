@@ -27,7 +27,9 @@ public class AccrueContextData: ObservableObject {
     }
     public func setAction(action: String) {
         actions = AccrueActionsData(action: action)
-        
+    }
+    public func clearAction(){
+        actions = AccrueActionsData()
     }
     
 }

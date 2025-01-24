@@ -126,6 +126,7 @@ public struct AccrueWebView: UIViewRepresentable {
         refreshContextData(webView: uiView)
         if(contextData?.actions.action == "AccrueTabPressed"){
             sendCustomEventGoToHomeScreen(webView: uiView)
+            contextData?.clearAction()
         }
     }
     
