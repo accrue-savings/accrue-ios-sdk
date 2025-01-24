@@ -121,7 +121,7 @@ public struct AccrueWebView: UIViewRepresentable {
         if url != uiView.url {
             uiView.load(request)
         }
-        
+        print("Updating context")
         // Refresh context data
         refreshContextData(webView: uiView)
     }
