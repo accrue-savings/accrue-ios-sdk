@@ -127,9 +127,11 @@ public struct AccrueWebView: UIViewRepresentable {
         sendEventsToWebView(webView: uiView, action: contextData?.actions.action)
     }
     
-    private func sendEventsToWebView(webView: WKWebView, action: String){
+    private func sendEventsToWebView(webView: WKWebView, action: String?){
         if(action == "AccrueTabPressed"){
             sendCustomEventGoToHomeScreen(webView: webView)
+        }else {
+            print("Event not supported: \(action)")
         }
     }
     
@@ -137,22 +139,8 @@ public struct AccrueWebView: UIViewRepresentable {
     
     private func refreshContextData(webView: WKWebView) -> Void {
         if let contextData = contextData {
-            
             let contextDataScript = generateContextDataScript(contextData: contextData)
-            webView.evaluateJavaScript(contextDataScript){ result, error in
-                if let error = error {
-                    print("JavaScript injection error: \(error.localizedDescription)")
-                               if let nsError = error as? NSError {
-                                   print("Error Domain: \(nsError.domain)")
-                                   print("Error Code: \(nsError.code)")
-                                   if let userInfo = nsError.userInfo as? [String: Any] {
-                                       print("User Info: \(userInfo)")
-                                   }
-                               }
-                } else {
-                    print("JavaScript executed successfully: \(String(describing: result))")
-                }
-            }
+            webView.evaluateJavaScript(contextDataScript)
         }
     }
     
@@ -210,7 +198,6 @@ public struct AccrueWebView: UIViewRepresentable {
     
     
     public func sendCustomEventGoToHomeScreen(webView: WKWebView) {
-        print("Calling sendCustomEventGoToHomeScreen...")
         sendCustomEvent(
             webView: webView,
             eventName: "__GO_TO_HOME_SCREEN",
@@ -224,7 +211,7 @@ public struct AccrueWebView: UIViewRepresentable {
         arguments: String = ""
     ) {
         
-        injectFunctionCall(
+        injectEvent(
             webView: webView,
             functionIdentifier: eventName,
             functionArguments: arguments
@@ -232,7 +219,7 @@ public struct AccrueWebView: UIViewRepresentable {
     }
 
     
-    private func injectFunctionCall(
+    private func injectEvent(
         webView: WKWebView,
         functionIdentifier: String,
         functionArguments: String
@@ -240,25 +227,14 @@ public struct AccrueWebView: UIViewRepresentable {
         
         let script = """
         (function() {
-            
             if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
                 window.\(functionIdentifier)(\(functionArguments));
             }
-            
             return "Script injected successfully";
         })();
         """
-        
-       print("Script: \(script) ")
-        webView.evaluateJavaScript(script){ result, error in
-            if let error = error {
-                print("JavaScript injection error: \(error.localizedDescription)")
-            } else {
-                print("JavaScript executed successfully: \(String(describing: result))")
-                contextData?.clearAction()
-            }
-        }
-      
+        webView.evaluateJavaScript(script)
+        contextData?.clearAction()
     }
     
     
