@@ -105,10 +105,11 @@ public struct AccrueWebView: UIViewRepresentable {
         if url != uiView.url {
             uiView.load(request)
         }
-        print("Updating context")
         // Refresh context data
         refreshContextData(webView: uiView)
-        sendEventsToWebView(webView: uiView, action: contextData?.actions.action)
+        if let action = contextData?.actions.action {
+            sendEventsToWebView(webView: uiView, action: action)
+        }
     }
     
     private func sendEventsToWebView(webView: WKWebView, action: String?){
