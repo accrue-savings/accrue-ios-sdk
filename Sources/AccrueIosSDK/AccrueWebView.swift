@@ -106,7 +106,6 @@ public struct AccrueWebView: UIViewRepresentable {
         // Set the navigation delegate
         self.webView.navigationDelegate = context.coordinator
         self.webView.uiDelegate = context.coordinator
-        context.coordinator.webView = webView
         
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
@@ -229,7 +228,7 @@ public struct AccrueWebView: UIViewRepresentable {
         
         print("Sending data: \(String(script))")
         // Inject the JavaScript into the WebView
-        self.webView?.evaluateJavaScript(script) { result, error in
+        self.webView.evaluateJavaScript(script) { result, error in
             if let error = error {
                 print("JavaScript injection error: \(error.localizedDescription)")
                            if let nsError = error as? NSError {
