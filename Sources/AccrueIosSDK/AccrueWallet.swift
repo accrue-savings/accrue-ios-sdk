@@ -34,7 +34,13 @@ public struct AccrueWallet: View {
         WebViewComponent
 #endif
     }
-   
+    
+    public func handleEvent(event: String) {
+        
+        print("Calling internalHandleEvent...\(event)")
+        contextData.setAction(action: event)
+    }
+       
     
     private func buildURL(isSandbox:Bool, url:String?) -> URL? {
         let apiBaseUrl: String
