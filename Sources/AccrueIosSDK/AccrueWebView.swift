@@ -8,11 +8,10 @@ import SafariServices
 
 
 @available(iOS 13.0, macOS 10.15, *)
-public struct WebView: UIViewRepresentable {
+public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    
     
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
         self.url = url
@@ -20,9 +19,9 @@ public struct WebView: UIViewRepresentable {
         self.onAction = onAction
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
-        var parent: WebView
+        var parent: AccrueWebView
         
-        public init(parent: WebView) {
+        public init(parent: AccrueWebView) {
             self.parent = parent
         }
         
@@ -50,7 +49,6 @@ public struct WebView: UIViewRepresentable {
         
         // Handle popups or window.open calls in the web view
         public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-            
             if let url = navigationAction.request.url {
                 if shouldOpenExternally(url: url) {
                     print("Pop Up triggered, openning In-App Browser")
@@ -76,6 +74,9 @@ public struct WebView: UIViewRepresentable {
             let safariVC = SFSafariViewController(url: url)
             viewController.present(safariVC, animated: true, completion: nil)
         }
+      
+        
+        
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -86,9 +87,8 @@ public struct WebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         if #available(iOS 16.4, *) {
-            webView.isInspectable = true
+            webView.isInspectable = true // Safe to use isInspectable here
         }
-        
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
@@ -105,14 +105,25 @@ public struct WebView: UIViewRepresentable {
         if url != uiView.url {
             uiView.load(request)
         }
-        
         // Refresh context data
         refreshContextData(webView: uiView)
+        if let action = contextData?.actions.action {
+            sendEventsToWebView(webView: uiView, action: action)
+        }
     }
+    
+    private func sendEventsToWebView(webView: WKWebView, action: String?){
+        if(action == "AccrueTabPressed"){
+            sendCustomEventGoToHomeScreen(webView: webView)
+        }else {
+            print("Event not supported: \(action)")
+        }
+    }
+    
+    
     
     private func refreshContextData(webView: WKWebView) -> Void {
         if let contextData = contextData {
-            
             let contextDataScript = generateContextDataScript(contextData: contextData)
             print("Refreshing contextData: \(contextDataScript)")
             webView.evaluateJavaScript(contextDataScript)
@@ -168,10 +179,60 @@ public struct WebView: UIViewRepresentable {
                 var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
                   detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
                 });
-                window.dispatchEvent(event);
-            
           })();
           """
     }
+    
+    
+    
+    public func sendCustomEventGoToHomeScreen(webView: WKWebView) {
+        sendCustomEvent(
+            webView: webView,
+            eventName: "__GO_TO_HOME_SCREEN",
+            arguments: ""
+        )
+    }
+    
+    public func sendCustomEvent(
+        webView: WKWebView,
+        eventName: String,
+        arguments: String = ""
+    ) {
+        
+        injectEvent(
+            webView: webView,
+            functionIdentifier: eventName,
+            functionArguments: arguments
+        )
+    }
+
+    
+    private func injectEvent(
+        webView: WKWebView,
+        functionIdentifier: String,
+        functionArguments: String
+    ) {
+        
+        let script = """
+        (function() {
+            if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                window.\(functionIdentifier)(\(functionArguments));
+            }
+            return "Script injected successfully";
+        })();
+        """
+        webView.evaluateJavaScript(script){ result, error in
+            if let error = error {
+                print("JavaScript injection error: \(error.localizedDescription)")
+            } else {
+                print("JavaScript executed successfully: \(String(describing: result))")
+                
+            }
+            contextData?.clearAction()
+        }
+        
+    }
+    
+    
 }
 #endif

@@ -8,13 +8,16 @@ import UIKit
 public class AccrueContextData: ObservableObject {
     @Published public var  userData: AccrueUserData
     @Published public var  settingsData: AccrueSettingsData
+    @Published public var  actions: AccrueActionsData
     
     public init(
         userData: AccrueUserData = AccrueUserData(),
-        settingsData: AccrueSettingsData = AccrueSettingsData()
+        settingsData: AccrueSettingsData = AccrueSettingsData(),
+        actions: AccrueActionsData = AccrueActionsData()
     ) {
         self.userData = userData
         self.settingsData = settingsData
+        self.actions = actions
     }
     public func updateUserData(referenceId: String?, email: String?, phoneNumber: String?, additionalData: [String: String]?) {
         userData = AccrueUserData(referenceId: referenceId, email: email, phoneNumber: phoneNumber, additionalData: additionalData)
@@ -22,9 +25,14 @@ public class AccrueContextData: ObservableObject {
     public func updateSettingsData(shouldInheritAuthentication: Bool) {
         settingsData = AccrueSettingsData(shouldInheritAuthentication: shouldInheritAuthentication)
     }
+    public func setAction(action: String) {
+        actions = AccrueActionsData(action: action)
+    }
+    public func clearAction(){
+        actions = AccrueActionsData()
+    }
     
 }
-
 public struct AccrueUserData {
     public let referenceId: String?
     public let email: String?
@@ -41,6 +49,14 @@ public struct AccrueUserData {
         self.email = email
         self.phoneNumber = phoneNumber
         self.additionalData = additionalData
+    }
+}
+
+public struct AccrueActionsData {
+    public let action: String?
+    
+    public init( action: String? = nil) {
+        self.action = action
     }
 }
 
@@ -101,3 +117,4 @@ public struct AccrueDeviceContextData {
 #endif
     }
 }
+

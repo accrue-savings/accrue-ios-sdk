@@ -7,9 +7,17 @@ public struct AccrueWallet: View {
     public let isSandbox: Bool
     public let url: String?
     public var onAction: ((String) -> Void)?
+    
     @ObservedObject var contextData: AccrueContextData
-    
-    
+#if os(iOS)
+    private var WebViewComponent: AccrueWebView {
+        let fallbackUrl = URL(string: AppConstants.productionUrl)!
+        let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+        
+        return AccrueWebView(url: url, contextData: contextData, onAction: onAction)
+    }
+#endif
+ 
     public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
@@ -21,15 +29,14 @@ public struct AccrueWallet: View {
     
     public var body: some View {
 #if os(iOS)
-        if let url = buildURL(isSandbox: isSandbox, url: url) {
-            WebView(url: url, contextData: contextData, onAction: onAction)
-        } else {
-            Text("Invalid URL")
-        }
-#else
-        Text("Platform not supported")
+        WebViewComponent
 #endif
     }
+    
+    public func handleEvent(event: String) {
+        contextData.setAction(action: event)
+    }
+       
     
     private func buildURL(isSandbox:Bool, url:String?) -> URL? {
         let apiBaseUrl: String
@@ -52,4 +59,5 @@ public struct AccrueWallet: View {
         
         return urlComponents?.url
     }
+        
 }
