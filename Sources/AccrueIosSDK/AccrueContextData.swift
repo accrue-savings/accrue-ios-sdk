@@ -13,11 +13,11 @@ public class AccrueContextData: ObservableObject {
     public init(
         userData: AccrueUserData = AccrueUserData(),
         settingsData: AccrueSettingsData = AccrueSettingsData(),
-        actions:AccrueActionsData = AccrueActionsData()
+        actions: AccrueActionsData = AccrueActionsData()
     ) {
         self.userData = userData
         self.settingsData = settingsData
-        self.actions = AccrueActionsData()
+        self.actions = actions
     }
     public func updateUserData(referenceId: String?, email: String?, phoneNumber: String?) {
         userData = AccrueUserData(referenceId: referenceId, email: email, phoneNumber: phoneNumber)
