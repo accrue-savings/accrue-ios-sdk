@@ -102,7 +102,6 @@ public struct AccrueWebView: UIViewRepresentable {
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         
-        
         if url != uiView.url {
             uiView.load(request)
         }
@@ -125,6 +124,7 @@ public struct AccrueWebView: UIViewRepresentable {
     private func refreshContextData(webView: WKWebView) -> Void {
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
+            print("Refreshing contextData: \(contextDataScript)")
             webView.evaluateJavaScript(contextDataScript)
         }
     }
@@ -132,8 +132,8 @@ public struct AccrueWebView: UIViewRepresentable {
     private func insertContextData(userController: WKUserContentController) -> Void {
         if let contextData = contextData {
             let contextDataScript = generateContextDataScript(contextData: contextData)
-            print(contextDataScript)
-            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+            print("Inserting contextData: \(contextDataScript)")
+            let userScript = WKUserScript(source: contextDataScript, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             userController.addUserScript(userScript)
         }
     }
@@ -142,6 +142,7 @@ public struct AccrueWebView: UIViewRepresentable {
         let userData = contextData.userData
         let settingsData = contextData.settingsData
         let deviceContextData = AccrueDeviceContextData()
+        let additionalDataJSON = UserDataHelper.parseDictionaryToJSONString(contextData.userData.additionalData)
         return """
           (function() {
                 window["\(AccrueWebEvents.EventHandlerName)"] = {
@@ -149,7 +150,8 @@ public struct AccrueWebView: UIViewRepresentable {
                         "userData": {
                             "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
                             "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
-                            "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null")
+                            "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null"),
+                            "additionalData": \(additionalDataJSON)
                         },
                         "settingsData": {
                             "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
