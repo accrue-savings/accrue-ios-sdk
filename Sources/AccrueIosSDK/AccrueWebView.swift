@@ -148,7 +148,8 @@ public struct AccrueWebView: UIViewRepresentable {
         
     }
     public func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
+        let coordinator = Coordinator(parent: self)
+        self.coordinatorReference = coordinator
     }
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
