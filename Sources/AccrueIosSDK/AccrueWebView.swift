@@ -237,23 +237,20 @@ public struct AccrueWebView: UIViewRepresentable {
     ) {
         
         let script = """
-                 (function() {
-                      
-                   console.log("Hello");
-                 })();
+        (function() {
+            setTimeout(function() {
+                if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                    window.\(functionIdentifier)(\(functionArguments));
+                }
+            }, 0);
+            return "Script injected successfully";
+        })();
         """
         
        
         self.webView.evaluateJavaScript(script){ result, error in
             if let error = error {
                 print("JavaScript injection error: \(error.localizedDescription)")
-                           if let nsError = error as? NSError {
-                               print("Error Domain: \(nsError.domain)")
-                               print("Error Code: \(nsError.code)")
-                               if let userInfo = nsError.userInfo as? [String: Any] {
-                                   print("User Info: \(userInfo)")
-                               }
-                           }
             } else {
                 print("JavaScript executed successfully: \(String(describing: result))")
             }
