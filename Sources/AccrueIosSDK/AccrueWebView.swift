@@ -200,7 +200,9 @@ public struct AccrueWebView: UIViewRepresentable {
                   detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
                 });
                 window.dispatchEvent(event);
-            
+                    if (typeof window !== "undefined" && typeof window.__GO_TO_HOME_SCREEN === "function") {
+                        window.__GO_TO_HOME_SCREEN();
+                    }
           })();
           """
     }
@@ -238,11 +240,11 @@ public struct AccrueWebView: UIViewRepresentable {
         
         let script = """
         (function() {
-            setTimeout(function() {
-                if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
-                    window.\(functionIdentifier)(\(functionArguments));
-                }
-            }, 0);
+            
+            if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
+                window.\(functionIdentifier)(\(functionArguments));
+            }
+            
             return "Script injected successfully";
         })();
         """
