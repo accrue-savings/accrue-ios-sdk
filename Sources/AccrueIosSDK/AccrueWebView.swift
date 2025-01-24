@@ -103,6 +103,7 @@ public struct AccrueWebView: UIViewRepresentable {
         // Set the navigation delegate
         self.webView.navigationDelegate = context.coordinator
         self.webView.uiDelegate = context.coordinator
+        self.webView.isInspectable = true
         
         // Add the script message handler
         let userContentController = self.webView.configuration.userContentController
@@ -199,10 +200,6 @@ public struct AccrueWebView: UIViewRepresentable {
                 var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
                   detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
                 });
-                window.dispatchEvent(event);
-                    if (typeof window !== "undefined" && typeof window.__GO_TO_HOME_SCREEN === "function") {
-                        window.__GO_TO_HOME_SCREEN();
-                    }
           })();
           """
     }
