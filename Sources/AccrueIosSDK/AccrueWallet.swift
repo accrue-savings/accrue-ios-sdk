@@ -34,18 +34,7 @@ public struct AccrueWallet: View {
         WebViewComponent
 #endif
     }
-    
-    public func handleEvent(event: String) {
-        
-        print("Calling internalHandleEvent...\(event)")
-#if os(iOS)
-        if event == "AccrueTabPressed" {
-            print("AccrueTab is pressed")
-            WebViewComponent.sendCustomEventGoToHomeScreen()
-        }
-#endif
-    }
-       
+   
     
     private func buildURL(isSandbox:Bool, url:String?) -> URL? {
         let apiBaseUrl: String
