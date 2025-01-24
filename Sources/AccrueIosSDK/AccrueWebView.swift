@@ -103,8 +103,9 @@ public struct AccrueWebView: UIViewRepresentable {
         // Set the navigation delegate
         self.webView.navigationDelegate = context.coordinator
         self.webView.uiDelegate = context.coordinator
-        self.webView.isInspectable = true
-        
+        if #available(iOS 16.4, *) {
+            self.webView.isInspectable = true // Safe to use isInspectable here
+        }
         // Add the script message handler
         let userContentController = self.webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
