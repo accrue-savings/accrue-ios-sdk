@@ -5,8 +5,6 @@ import WebKit
 import UIKit
 import Foundation
 import SafariServices
-import ComposableArchitecture
-import SwiftUIExtension
  
 public class WebViewModel: ObservableObject {
     @Published public var link: String
