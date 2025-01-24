@@ -124,7 +124,7 @@ public struct AccrueWebView: UIViewRepresentable {
         print("Updating context")
         // Refresh context data
         refreshContextData(webView: uiView)
-        if(contextData?.actions == "AccrueTabPressed"){
+        if(contextData?.actions.action == "AccrueTabPressed"){
             sendCustomEventGoToHomeScreen(webView: uiView)
         }
     }
