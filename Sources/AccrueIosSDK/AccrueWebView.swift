@@ -124,8 +124,12 @@ public struct AccrueWebView: UIViewRepresentable {
         print("Updating context")
         // Refresh context data
         refreshContextData(webView: uiView)
-        if(contextData?.actions.action == "AccrueTabPressed"){
-            sendCustomEventGoToHomeScreen(webView: uiView)
+        sendEventsToWebView(webView: uiView, action: contextData?.actions.action)
+    }
+    
+    private func sendEventsToWebView(webView: WKWebView, action: String){
+        if(action == "AccrueTabPressed"){
+            sendCustomEventGoToHomeScreen(webView: webView)
         }
     }
     
