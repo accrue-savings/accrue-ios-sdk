@@ -27,22 +27,18 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    @ObservedObject var viewModel: WebViewModel
     let webView = WKWebView()
     
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, viewModel: WebViewModel) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
-        self.viewModel = viewModel
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
-        private var viewModel: WebViewModel
         
-        public init(viewModel: WebViewModel, parent: AccrueWebView) {
+        public init(parent: AccrueWebView) {
             self.parent = parent
-            self.viewModel = viewModel
         }
         
         public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -100,23 +96,23 @@ public struct AccrueWebView: UIViewRepresentable {
         
     }
     public func makeCoordinator() -> Coordinator {
-        Coordinator(viewModel: self.viewModel, parent: self)
+        Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+ 
         // Set the navigation delegate
         self.webView.navigationDelegate = context.coordinator
         self.webView.uiDelegate = context.coordinator
         
         // Add the script message handler
-        let userContentController = webView.configuration.userContentController
+        let userContentController = self.webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
         
         
         // Inject JavaScript to set context data
         insertContextData(userController: userContentController)
         
-        return webView
+        return self.webView
     }
     public func updateUIView(_ uiView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
