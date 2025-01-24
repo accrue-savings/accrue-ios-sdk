@@ -210,6 +210,7 @@ public struct AccrueWebView: UIViewRepresentable {
     public func sendCustomEventGoToHomeScreen(webView: WKWebView) {
         print("Calling sendCustomEventGoToHomeScreen...")
         sendCustomEvent(
+            webView: webView,
             eventName: "__GO_TO_HOME_SCREEN",
             arguments: ""
         )
