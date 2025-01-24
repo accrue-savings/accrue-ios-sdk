@@ -16,10 +16,8 @@ public struct AccrueWallet: View {
         
         return AccrueWebView(url: url, contextData: contextData, onAction: onAction)
     }
-    #endif
+#endif
  
-    
-    
     public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
@@ -36,8 +34,6 @@ public struct AccrueWallet: View {
     }
     
     public func handleEvent(event: String) {
-        
-        print("Calling internalHandleEvent...\(event)")
         contextData.setAction(action: event)
     }
        
