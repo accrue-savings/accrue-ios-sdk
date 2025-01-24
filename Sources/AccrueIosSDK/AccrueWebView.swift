@@ -236,8 +236,8 @@ public struct AccrueWebView: UIViewRepresentable {
                  })();
         """
         
-        let contextDataScript = generateContextDataScript(contextData: contextData)
-        self.webView.evaluateJavaScript(contextDataScript){ result, error in
+       
+        self.webView.evaluateJavaScript(script){ result, error in
             if let error = error {
                 print("JavaScript injection error: \(error.localizedDescription)")
                            if let nsError = error as? NSError {
