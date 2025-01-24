@@ -218,8 +218,16 @@ public struct AccrueWebView: UIViewRepresentable {
             return "Script injected successfully";
         })();
         """
-        webView.evaluateJavaScript(script)
-        contextData?.clearAction()
+        webView.evaluateJavaScript(script){ result, error in
+            if let error = error {
+                print("JavaScript injection error: \(error.localizedDescription)")
+            } else {
+                print("JavaScript executed successfully: \(String(describing: result))")
+                
+            }
+            contextData?.clearAction()
+        }
+        
     }
     
     
