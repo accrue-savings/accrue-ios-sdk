@@ -126,7 +126,6 @@ public struct AccrueWebView: UIViewRepresentable {
         refreshContextData(webView: uiView)
         if(contextData?.actions.action == "AccrueTabPressed"){
             sendCustomEventGoToHomeScreen(webView: uiView)
-            contextData?.clearAction()
         }
     }
     
@@ -252,6 +251,7 @@ public struct AccrueWebView: UIViewRepresentable {
                 print("JavaScript injection error: \(error.localizedDescription)")
             } else {
                 print("JavaScript executed successfully: \(String(describing: result))")
+                contextData?.clearAction()
             }
         }
       
