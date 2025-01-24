@@ -30,10 +30,11 @@ public struct AccrueWebView: UIViewRepresentable {
     @ObservedObject var viewModel: WebViewModel
     let webView = WKWebView()
     
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, viewModel: WebViewModel) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
+        self.viewModel = viewModel
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
