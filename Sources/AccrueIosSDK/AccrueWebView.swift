@@ -65,7 +65,6 @@ public struct AccrueWebView: UIViewRepresentable {
         
         // Handle popups or window.open calls in the web view
         public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-            self.viewModel.didFinishLoading = webView.isLoading
             if let url = navigationAction.request.url {
                 if shouldOpenExternally(url: url) {
                     print("Pop Up triggered, openning In-App Browser")
