@@ -5,21 +5,6 @@ import WebKit
 import UIKit
 import Foundation
 import SafariServices
- 
-public class WebViewModel: ObservableObject {
-    @Published public var link: String
-    @Published public var didFinishLoading: Bool = true
-
-    public init (link: String) {
-        self.link = link
-    }
-}
-
-extension WebViewModel: Equatable {
-    public static func == (lhs: WebViewModel, rhs: WebViewModel) -> Bool {
-        return lhs.link == rhs.link && lhs.didFinishLoading == rhs.didFinishLoading
-    }
-}
 
 
 @available(iOS 13.0, macOS 10.15, *)
