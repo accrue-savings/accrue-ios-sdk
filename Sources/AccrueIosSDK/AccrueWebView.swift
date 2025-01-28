@@ -179,6 +179,7 @@ public struct AccrueWebView: UIViewRepresentable {
                 var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
                   detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
                 });
+                window.dispatchEvent(event);
           })();
           """
     }
