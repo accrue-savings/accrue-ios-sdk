@@ -105,10 +105,11 @@ public struct AccrueWebView: UIViewRepresentable {
         if url != uiView.url {
             uiView.load(request)
         }
-        // Refresh context data
-        refreshContextData(webView: uiView)
-        if let action = contextData?.actions.action {
+        if let action = contextData?.actions.action, !action.isEmpty {
             sendEventsToWebView(webView: uiView, action: action)
+        } else {
+            // Refresh context data
+            refreshContextData(webView: uiView)
         }
     }
     
@@ -117,6 +118,7 @@ public struct AccrueWebView: UIViewRepresentable {
             sendCustomEventGoToHomeScreen(webView: webView)
         }else {
             print("Event not supported: \(action)")
+            contextData?.clearAction()
         }
     }
     
