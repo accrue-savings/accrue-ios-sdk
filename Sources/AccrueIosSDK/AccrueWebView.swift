@@ -86,6 +86,9 @@ public struct AccrueWebView: UIViewRepresentable {
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        webView.isMultipleTouchEnabled = false
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+
         if #available(iOS 16.4, *) {
             webView.isInspectable = true // Safe to use isInspectable here
         }
