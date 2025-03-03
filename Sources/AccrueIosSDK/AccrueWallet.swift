@@ -42,7 +42,6 @@ public struct AccrueWallet: View {
     
     public var body: some View {
 #if os(iOS)
-        WebViewComponent
         if isLoading {
             VStack {
                 if #available(iOS 14.0, *) {
