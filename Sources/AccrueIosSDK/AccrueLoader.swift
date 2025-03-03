@@ -1,3 +1,5 @@
+import SwiftUI
+
 struct AccrueLoader: View {
     @State var loading = false
     
