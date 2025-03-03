@@ -12,7 +12,7 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    @Binding var isLoading: Bool
+    @Binding var isLoading: Binding<Bool>
 
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Binding<Bool>) {
         self.url = url
@@ -63,19 +63,19 @@ public struct AccrueWebView: UIViewRepresentable {
         }
 
          
-        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
             DispatchQueue.main.async {
                 self.parent.isLoading = true  // ✅ Safe UI update
             }
         }
         
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             DispatchQueue.main.async {
                 self.parent.isLoading = false
             }
         }
         
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             DispatchQueue.main.async {
                 self.parent.isLoading = false
             }
