@@ -14,11 +14,11 @@ public struct AccrueWebView: UIViewRepresentable {
     public var onAction: ((String) -> Void)?
     @Binding var isLoading: Bool
 
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Bool) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Binding<Bool>) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
-        self.isLoading = isLoading
+        self._isLoading = isLoading
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
