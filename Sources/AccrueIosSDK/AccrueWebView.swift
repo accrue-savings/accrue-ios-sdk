@@ -73,14 +73,14 @@ public struct AccrueWebView: UIViewRepresentable {
         public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             DispatchQueue.main.async {
                 print("didFinish")
-                self.parent.isLoading = true
+                self.parent.isLoading = false
             }
         }
         
         public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             DispatchQueue.main.async {
                 print("didFail")
-                self.parent.isLoading = true
+                self.parent.isLoading = false
             }
         }
         
