@@ -48,7 +48,7 @@ public struct AccrueWallet: View {
         if isLoading {
             VStack {
                 if #available(iOS 14.0, *) {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle())
+                    ProgressView().progressViewStyle(.automatic)
                     .scaleEffect(1.5)
                 } else {
                     ActivityIndicatorView()
