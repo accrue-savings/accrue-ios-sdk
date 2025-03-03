@@ -54,9 +54,6 @@ public struct AccrueWallet: View {
                     ActivityIndicatorView()
                     .scaleEffect(1.5)
                 }
-                Text("Loading...")
-                .font(.headline)
-                .foregroundColor(.gray)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.white.opacity(0.8))
