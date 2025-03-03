@@ -1,9 +1,10 @@
 import SwiftUI
 import UIKit
 
+
 struct ActivityIndicatorView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIActivityIndicatorView {
-        let spinner = UIActivityIndicatorView(style: .large) // Large style for visibility
+        let spinner = UIActivityIndicatorView(style: .large)
         spinner.startAnimating()
         return spinner
     }
@@ -42,6 +43,8 @@ public struct AccrueWallet: View {
     
     public var body: some View {
 #if os(iOS)
+    ZStack {
+        WebViewComponent
         if isLoading {
             VStack {
                 if #available(iOS 14.0, *) {
@@ -59,6 +62,7 @@ public struct AccrueWallet: View {
             .background(Color.white.opacity(0.8))
             .edgesIgnoringSafeArea(.all)
         }
+    }
 #endif
     }
     
