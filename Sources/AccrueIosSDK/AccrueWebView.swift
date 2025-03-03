@@ -12,9 +12,9 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    @Binding var isLoading: Binding<Bool>
+    @Binding var isLoading: Bool
 
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Binding<Bool>) {
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Bool) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
