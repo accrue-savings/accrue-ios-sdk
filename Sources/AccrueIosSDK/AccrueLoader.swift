@@ -4,7 +4,7 @@ struct AccrueLoader: View {
     @State var loading = false
     
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 1) {
             Circle()
                 .fill(Color.gray)
                 .frame(width: 20, height: 20)
