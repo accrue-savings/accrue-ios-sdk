@@ -7,14 +7,15 @@ public struct AccrueWallet: View {
     public let isSandbox: Bool
     public let url: String?
     public var onAction: ((String) -> Void)?
-    
+    @State private var isLoading: Bool = false
+
     @ObservedObject var contextData: AccrueContextData
 #if os(iOS)
     private var WebViewComponent: AccrueWebView {
         let fallbackUrl = URL(string: AppConstants.productionUrl)!
         let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
         
-        return AccrueWebView(url: url, contextData: contextData, onAction: onAction)
+        return AccrueWebView(url: url, contextData: contextData, onAction: onAction, isLoading: $isLoading)
     }
 #endif
  
@@ -30,6 +31,17 @@ public struct AccrueWallet: View {
     public var body: some View {
 #if os(iOS)
         WebViewComponent
+        if isLoading {
+            VStack {
+                ProgressView().progressViewStyle(CircularProgressViewStyle()).scaleEffect(1.5)
+                Text("Loading...")
+                .font(.headline)
+                .foregroundColor(.gray)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.white.opacity(0.8))
+            .edgesIgnoringSafeArea(.all)
+        }
 #endif
     }
     

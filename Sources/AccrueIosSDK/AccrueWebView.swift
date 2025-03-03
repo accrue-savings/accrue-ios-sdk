@@ -12,11 +12,13 @@ public struct AccrueWebView: UIViewRepresentable {
     public let url: URL
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
-    
-    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil) {
+    @Binding var isLoading: Bool
+
+    public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Binding<Bool>) {
         self.url = url
         self.contextData = contextData
         self.onAction = onAction
+        self.isLoading = isLoading
     }
     public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
         var parent: AccrueWebView
@@ -58,6 +60,25 @@ public struct AccrueWebView: UIViewRepresentable {
                 }
             }
             return nil
+        }
+
+         
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = true  // ✅ Safe UI update
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = false
+            }
+        }
+        
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            DispatchQueue.main.async {
+                self.parent.isLoading = false
+            }
         }
         
         // Helper function to determine if the URL should be opened externally
