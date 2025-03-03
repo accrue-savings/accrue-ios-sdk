@@ -33,8 +33,13 @@ public struct AccrueWallet: View {
         WebViewComponent
         if isLoading {
             VStack {
-                ProgressView().ifAvailable(iOS: 14) { $0.progressViewStyle(CircularProgressViewStyle()) }
-                .scaleEffect(1.5)
+                if #available(iOS 14.0, *) {
+                    ProgressView().progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(1.5)
+                } else {
+                    ProgressView()
+                    .scaleEffect(1.5)
+                }
                 Text("Loading...")
                 .font(.headline)
                 .foregroundColor(.gray)
