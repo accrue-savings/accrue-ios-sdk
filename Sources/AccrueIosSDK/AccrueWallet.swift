@@ -47,13 +47,7 @@ public struct AccrueWallet: View {
         WebViewComponent
         if isLoading {
             VStack {
-                if #available(iOS 14.0, *) {
-                    ProgressView().progressViewStyle(.automatic)
-                    .scaleEffect(1.5)
-                } else {
-                    ActivityIndicatorView()
-                    .scaleEffect(1.5)
-                }
+                AccrueLoader()   
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.white.opacity(0.8))
