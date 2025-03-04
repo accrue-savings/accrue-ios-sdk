@@ -7,7 +7,7 @@ public struct AccrueWallet: View {
     public let isSandbox: Bool
     public let url: String?
     public var onAction: ((String) -> Void)?
-    public var shouldShowLoader: Bool = false
+    public var shouldShowLoader: Bool = true
     @State private var isLoading: Bool = false
 
     @ObservedObject var contextData: AccrueContextData
@@ -20,7 +20,7 @@ public struct AccrueWallet: View {
     }
 #endif
  
-    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil, shouldShowLoader: Bool = false) {
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil, shouldShowLoader: Bool = true) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
         self.contextData = contextData
