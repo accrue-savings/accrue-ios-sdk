@@ -120,6 +120,10 @@ public struct AccrueWebView: UIViewRepresentable {
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
         
+         // Observe when app enters foreground
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { _ in
+            webView.reload()
+        }
         
         // Inject JavaScript to set context data
         insertContextData(userController: userContentController)
