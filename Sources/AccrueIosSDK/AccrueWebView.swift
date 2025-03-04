@@ -122,6 +122,7 @@ public struct AccrueWebView: UIViewRepresentable {
         
          // Observe when app enters foreground
         NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { _ in
+            print("App entered foreground, reloading WebView")
             webView.reload()
         }
         
