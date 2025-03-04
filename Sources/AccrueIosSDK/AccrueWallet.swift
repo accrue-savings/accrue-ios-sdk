@@ -20,6 +20,7 @@ public struct AccrueWallet: View {
     public let isSandbox: Bool
     public let url: String?
     public var onAction: ((String) -> Void)?
+    public var shouldShowLoader: Bool = false
     @State private var isLoading: Bool = false
 
     @ObservedObject var contextData: AccrueContextData
@@ -39,13 +40,14 @@ public struct AccrueWallet: View {
         self.isSandbox = isSandbox
         self.url = url
         self.onAction = onAction
+        self.shouldShowLoader = shouldShowLoader
     }
     
     public var body: some View {
 #if os(iOS)
     ZStack {
         WebViewComponent
-        if isLoading {
+        if isLoading && shouldShowLoader {
             VStack {
                 AccrueLoader()
             }
