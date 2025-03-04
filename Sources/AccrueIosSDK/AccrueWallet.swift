@@ -33,7 +33,7 @@ public struct AccrueWallet: View {
     }
 #endif
  
-    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil) {
+    public init(merchantId: String, redirectionToken: String?,isSandbox: Bool,url: String? = nil, contextData: AccrueContextData = AccrueContextData(), onAction: ((String) -> Void)? = nil, shouldShowLoader: Bool = false) {
         self.merchantId = merchantId
         self.redirectionToken = redirectionToken
         self.contextData = contextData
