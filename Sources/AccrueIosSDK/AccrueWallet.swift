@@ -1,17 +1,4 @@
 import SwiftUI
-import UIKit
-
-
-struct ActivityIndicatorView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIActivityIndicatorView {
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.startAnimating()
-        return spinner
-    }
-
-    func updateUIView(_ uiView: UIActivityIndicatorView, context: Context) {}
-}
-
 
 @available(macOS 10.15, *)
 public struct AccrueWallet: View {
