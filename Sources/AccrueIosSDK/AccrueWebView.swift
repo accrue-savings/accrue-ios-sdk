@@ -92,8 +92,8 @@ public struct AccrueWebView: UIViewRepresentable {
         // Helper function to determine if the URL should be opened externally
         private func shouldOpenExternally(url: URL) -> Bool {
             // Only open external URLs (i.e., URLs not matching the parent WebView's host)
-            if let host = url.host, host != parent.url.host {
-                return true
+            if let host = url.host {
+                return host != parent.url.host
             }
 
             return false
