@@ -37,6 +37,10 @@ public struct AccrueWebView: UIViewRepresentable {
             // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
             if navigationAction.navigationType == .linkActivated {
                 if let url = navigationAction.request.url {
+                    if isDeepLink(url) {
+                        openSystemDeepLink(url: url)
+                        return
+                    }
                     // Check if the URL is external (i.e., different from the original host)
                     if shouldOpenExternally(url: url) {
                         print("Link clicked, openning In-App Browser")
@@ -52,6 +56,10 @@ public struct AccrueWebView: UIViewRepresentable {
         // Handle popups or window.open calls in the web view
         public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if let url = navigationAction.request.url {
+                if isDeepLink(url) {
+                    openSystemDeepLink(url: url)
+                    return nil
+                }
                 if shouldOpenExternally(url: url) {
                     print("Pop Up triggered, openning In-App Browser")
                     // Open the link in an in-app browser (SFSafariViewController)
@@ -87,6 +95,7 @@ public struct AccrueWebView: UIViewRepresentable {
             if let host = url.host {
                 return host != parent.url.host
             }
+
             return false
         }
         // Open the URL in an in-app browser (SFSafariViewController)
@@ -96,8 +105,24 @@ public struct AccrueWebView: UIViewRepresentable {
             viewController.present(safariVC, animated: true, completion: nil)
         }
       
+        private func isDeepLink(_ url: URL) -> Bool {
+            guard let scheme = url.scheme?.lowercased() else {
+               return false
+            }
+            return !["http", "https", "mailto", "tel", "sms", "ftp"].contains(scheme)
+        }
         
-        
+        private func openSystemDeepLink(url: URL) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:]) { success in
+                    if !success {
+                        print("Failed to open deep link: \(url)")
+                    }
+                }
+            } else {
+                print("No app can handle deep link: \(url)")
+            }
+        }
     }
     public func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
