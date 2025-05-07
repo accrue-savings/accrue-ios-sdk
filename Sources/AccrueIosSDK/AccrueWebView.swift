@@ -128,10 +128,21 @@ public struct AccrueWebView: UIViewRepresentable {
         Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        // Create a shared process pool
+        let processPool = WKProcessPool()
+        
+        // Configure the website data store
+        let configuration = WKWebViewConfiguration()
+        configuration.processPool = processPool
+        configuration.websiteDataStore = .default()
+        
+        // Create WebView with the configuration
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        
         // Set the navigation delegate
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        
         // Disable zoom and pinch effect
         webView.isMultipleTouchEnabled = false
         webView.scrollView.pinchGestureRecognizer?.isEnabled = false
@@ -139,8 +150,9 @@ public struct AccrueWebView: UIViewRepresentable {
         webView.scrollView.maximumZoomScale = 1.0
         
         if #available(iOS 16.4, *) {
-            webView.isInspectable = true // Safe to use isInspectable here
+            webView.isInspectable = true
         }
+        
         // Add the script message handler
         let userContentController = webView.configuration.userContentController
         userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
@@ -151,7 +163,8 @@ public struct AccrueWebView: UIViewRepresentable {
         return webView
     }
     public func updateUIView(_ uiView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
+        var request = URLRequest(url: url)
+        request.cachePolicy = .returnCacheDataElseLoad  // Add cache policy
         
         if url != uiView.url {
             uiView.load(request)
@@ -285,6 +298,12 @@ public struct AccrueWebView: UIViewRepresentable {
         
     }
     
-    
+    public static func clearWebsiteData() {
+        let dataTypes = Set([WKWebsiteDataTypeLocalStorage])
+        let date = Date(timeIntervalSince1970: 0)
+        WKWebsiteDataStore.default().removeData(ofTypes: dataTypes, modifiedSince: date) {
+            print("Website data cleared")
+        }
+    }
 }
 #endif
