@@ -13,6 +13,9 @@ public struct AccrueWebView: UIViewRepresentable {
     public var contextData: AccrueContextData?
     public var onAction: ((String) -> Void)?
     @Binding var isLoading: Bool
+    
+    // Add a static dictionary to track WebView instances
+    private static var webViewInstances: [URL: WKWebView] = [:]
 
     public init(url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil, isLoading: Binding<Bool>) {
         self.url = url
@@ -128,6 +131,11 @@ public struct AccrueWebView: UIViewRepresentable {
         Coordinator(parent: self)
     }
     public func makeUIView(context: Context) -> WKWebView {
+        // Check if we already have a WebView instance for this URL
+        if let existingWebView = Self.webViewInstances[url] {
+            return existingWebView
+        }
+        
         // Create a shared process pool
         let processPool = WKProcessPool()
         
@@ -160,15 +168,19 @@ public struct AccrueWebView: UIViewRepresentable {
         // Inject JavaScript to set context data
         insertContextData(userController: userContentController)
         
+        // Store the WebView instance
+        Self.webViewInstances[url] = webView
+        
         return webView
     }
     public func updateUIView(_ uiView: WKWebView, context: Context) {
-        var request = URLRequest(url: url)
-        request.cachePolicy = .returnCacheDataElseLoad  // Add cache policy
-        
+        // Only load the URL if it's different from the current one
         if url != uiView.url {
+            var request = URLRequest(url: url)
+            request.cachePolicy = .returnCacheDataElseLoad
             uiView.load(request)
         }
+        
         // Refresh context data
         refreshContextData(webView: uiView)
         if let action = contextData?.actions.action {
@@ -304,6 +316,15 @@ public struct AccrueWebView: UIViewRepresentable {
         WKWebsiteDataStore.default().removeData(ofTypes: dataTypes, modifiedSince: date) {
             print("Website data cleared")
         }
+    }
+    
+    // Add cleanup method
+    public static func cleanup() {
+        // Remove all WebView instances
+        webViewInstances.removeAll()
+        
+        // Clear website data
+        clearWebsiteData()
     }
 }
 #endif
