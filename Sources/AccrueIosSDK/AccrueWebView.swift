@@ -343,7 +343,7 @@
             // Clear website data
             clearWebsiteData()
         }
-        public func updateContextData(_ newContextData: AccrueContextData) {
+        public mutating func updateContextData(_ newContextData: AccrueContextData) {
             self.contextData = newContextData
             if let webView = Self.webViewInstances[url] {
                 refreshContextData(webView: webView)
