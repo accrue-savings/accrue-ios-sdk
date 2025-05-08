@@ -55,10 +55,10 @@ public struct AccrueWallet: View {
         contextData.setAction(action: event)
     }
 
-    public func updateContextData() {
+    public func triggerContextDataUpdates() {
         #if os(iOS)
             let webView = WebViewComponent
-            webView.updateContextData()
+            webView.triggerContextDataRefresh()
         #endif
     }
 

@@ -155,12 +155,8 @@
                 return existingWebView
             }
 
-            // Create a shared process pool
-            let processPool = WKProcessPool()
-
             // Configure the website data store
             let configuration = WKWebViewConfiguration()
-            configuration.processPool = processPool
             configuration.websiteDataStore = .default()
 
             // Create WebView with the configuration
@@ -343,7 +339,8 @@
             // Clear website data
             clearWebsiteData()
         }
-        public func updateContextData() {
+        // Trigger a context data refresh
+        public func triggerContextDataRefresh() {
             let instance = Self.webViewInstances[url]
             if let webView = instance {
                 refreshContextData(webView: webView)
