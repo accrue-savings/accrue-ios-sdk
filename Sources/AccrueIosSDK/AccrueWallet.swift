@@ -48,7 +48,7 @@ public struct AccrueWallet: View {
                     .edgesIgnoringSafeArea(.all)
                 }
             }
-            .onChange(of: contextData) { _ in
+            .onReceive(contextData.objectWillChange) { _ in
                 propagateContextDataChanges()
             }
         #endif
