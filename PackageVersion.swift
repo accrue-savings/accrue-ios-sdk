@@ -1,3 +1,3 @@
 public struct PackageVersion {
-  public static let version = "1.5.2"
+  public static let version = "1.5.3"
 }
