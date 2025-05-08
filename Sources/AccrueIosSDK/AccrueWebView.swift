@@ -215,19 +215,11 @@
             }
         }
 
-        public func refreshContextData(webView: WKWebView) {
+        private func refreshContextData(webView: WKWebView) {
             if let contextData = contextData {
-                print("AccrueWebView: Refreshing context data in WebView")
-                print("AccrueWebView: Current user data -")
-                print("AccrueWebView: ReferenceId: \(contextData.userData.referenceId ?? "nil")")
-                print("AccrueWebView: Email: \(contextData.userData.email ?? "nil")")
-                print("AccrueWebView: PhoneNumber: \(contextData.userData.phoneNumber ?? "nil")")
                 let contextDataScript = generateContextDataScript(contextData: contextData)
-                print("AccrueWebView: Injecting updated context data script")
+                print("Refreshing contextData: \(contextDataScript)")
                 webView.evaluateJavaScript(contextDataScript)
-                print("AccrueWebView: Context data refresh completed")
-            } else {
-                print("AccrueWebView: No context data available to refresh")
             }
         }
 
@@ -351,6 +343,13 @@
             // Clear website data
             clearWebsiteData()
         }
-
+        public func updateContextData() {
+            let instance = Self.webViewInstances[url]
+            if let webView = instance {
+                refreshContextData(webView: webView)
+            } else {
+                print("AccrueWebView: No web view found")
+            }
+        }
     }
 #endif
