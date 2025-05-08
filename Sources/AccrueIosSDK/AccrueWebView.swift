@@ -217,9 +217,17 @@
 
         private func refreshContextData(webView: WKWebView) {
             if let contextData = contextData {
+                print("AccrueWebView: Refreshing context data in WebView")
+                print("AccrueWebView: Current user data -")
+                print("AccrueWebView: ReferenceId: \(contextData.userData.referenceId ?? "nil")")
+                print("AccrueWebView: Email: \(contextData.userData.email ?? "nil")")
+                print("AccrueWebView: PhoneNumber: \(contextData.userData.phoneNumber ?? "nil")")
                 let contextDataScript = generateContextDataScript(contextData: contextData)
-                print("Refreshing contextData: \(contextDataScript)")
+                print("AccrueWebView: Injecting updated context data script")
                 webView.evaluateJavaScript(contextDataScript)
+                print("AccrueWebView: Context data refresh completed")
+            } else {
+                print("AccrueWebView: No context data available to refresh")
             }
         }
 

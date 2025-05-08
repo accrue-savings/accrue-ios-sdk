@@ -47,6 +47,10 @@ public struct AccrueWallet: View {
                     .background(Color.white.opacity(0.8))
                     .edgesIgnoringSafeArea(.all)
                 }
+            }.onChange(of: contextData.userData) { oldValue, newValue in
+                print("AccrueWallet: Context data changed")
+                print("AccrueWallet: Old referenceId: \(oldValue.phoneNumber ?? "nil")")
+                print("AccrueWallet: New referenceId: \(newValue.phoneNumber ?? "nil")")
             }
         #endif
     }
