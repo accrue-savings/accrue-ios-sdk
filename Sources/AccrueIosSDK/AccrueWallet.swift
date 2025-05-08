@@ -55,6 +55,13 @@ public struct AccrueWallet: View {
         contextData.setAction(action: event)
     }
 
+    public func updateContextData() {
+        #if os(iOS)
+            let webView = WebViewComponent
+            webView.updateContextData()
+        #endif
+    }
+
     private func buildURL(isSandbox: Bool, url: String?) -> URL? {
         let apiBaseUrl: String
 
