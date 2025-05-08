@@ -48,6 +48,9 @@ public struct AccrueWallet: View {
                     .edgesIgnoringSafeArea(.all)
                 }
             }
+            .onChange(of: contextData) { _ in
+                propagateContextDataChanges()
+            }
         #endif
     }
 
@@ -55,7 +58,7 @@ public struct AccrueWallet: View {
         contextData.setAction(action: event)
     }
 
-    public func propagateContextDataChanges() {
+    private func propagateContextDataChanges() {
         #if os(iOS)
             let webView = WebViewComponent
             webView.triggerContextDataRefresh()
