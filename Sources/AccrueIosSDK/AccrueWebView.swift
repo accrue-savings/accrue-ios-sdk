@@ -215,7 +215,7 @@
             }
         }
 
-        private func refreshContextData(webView: WKWebView) {
+        public func refreshContextData(webView: WKWebView) {
             if let contextData = contextData {
                 print("AccrueWebView: Refreshing context data in WebView")
                 print("AccrueWebView: Current user data -")
