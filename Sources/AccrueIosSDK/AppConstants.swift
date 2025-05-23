@@ -10,4 +10,10 @@ public struct AccrueWebEvents {
     static let EventHandlerName:String = "AccrueWallet"
     static let AccrueWalletSignInPerfomerdMessageKey:String = "AccrueWallet::SignInPerformed"
     static let AccrueWalletContextChangedEventKey:String = "AccrueWallet::ContextChanged"
+
+    //Apple Wallet flow
+    static let AppleWalletProvisioningRequested = "AccrueWallet::AppleWalletProvisioningRequested"
+    static let AppleWalletProvisioningSignRequest = "AccrueWallet::AppleWalletProvisioningSignRequest"
+    static let AppleWalletProvisioningSignResponse = "AccrueWallet::AppleWalletProvisioningSignResponse"
+    static let AppleWalletProvisioningResult = "AccrueWallet::AppleWalletProvisioningResult"
 }
