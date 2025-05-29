@@ -187,10 +187,9 @@
                     print("No app can handle deep link: \(url)")
                 }
             }
-        }
-
-        private func isWalletDeepLink(url: URL) -> Bool {
-            return url.scheme == "wallet"
+            private func isWalletDeepLink(url: URL) -> Bool {
+                return url.scheme == "wallet"
+            }
         }
 
         public func makeCoordinator() -> Coordinator {
