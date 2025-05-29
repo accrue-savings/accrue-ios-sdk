@@ -90,6 +90,13 @@
                 print("AccrueWebView: Request URL scheme: \(navigationAction.request.url?.scheme)")
                 print("AccrueWebView: Request URL path: \(navigationAction.request.url?.path)")
                 print("AccrueWebView: Request URL query: \(navigationAction.request.url?.query)")
+                // IF scheme is wallet://, open the link in an in-app browser (SFSafariViewController)
+                if navigationAction.request.url?.scheme == "wallet" {
+                    openSystemDeepLink(url: navigationAction.request.url!)
+                    decisionHandler(.cancel)
+                    return
+                }
+
                 // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
                 if navigationAction.navigationType == .linkActivated {
                     if let url = navigationAction.request.url {
