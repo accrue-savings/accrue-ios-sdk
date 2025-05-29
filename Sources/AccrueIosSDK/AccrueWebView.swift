@@ -170,6 +170,7 @@
 
             private func openSystemDeepLink(url: URL) {
                 if UIApplication.shared.canOpenURL(url) {
+                    print("Opening deep link: \(url)")
                     UIApplication.shared.open(url, options: [:]) { success in
                         if !success {
                             print("Failed to open deep link: \(url)")
