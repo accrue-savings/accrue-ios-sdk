@@ -25,46 +25,53 @@
             self.onAction = onAction
             self._isLoading = isLoading
         }
-        public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate, WKUIDelegate {
+        public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate,
+            WKUIDelegate
+        {
 
             var parent: AccrueWebView
-            weak var webView: WKWebView?       // 🆕 keep a reference
+            weak var webView: WKWebView?  // 🆕 keep a reference
 
             public init(parent: AccrueWebView) {
                 self.parent = parent
             }
 
-            public func userContentController(_ userContentController: WKUserContentController,
-                                      didReceive message: WKScriptMessage) {
+            public func userContentController(
+                _ userContentController: WKUserContentController,
+                didReceive message: WKScriptMessage
+            ) {
                 print("AccrueWebView: Received message: \(message.body)")
                 guard message.name == AccrueWebEvents.EventHandlerName,
-                      let body = message.body as? String else { return }
+                    let body = message.body as? String
+                else { return }
 
                 if let data = body.data(using: .utf8),
-                   let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let type = envelope["key"] as? String {
+                    let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                    let type = envelope["key"] as? String
+                {
 
                     switch type {
-                        case AccrueWebEvents.AppleWalletProvisioningRequested:
-                            // 🔑  use the saved WKWebView (fallback to message.webView when available)
-                            guard let wv = self.webView ?? message.webView else {
-                                parent.onAction?(body)
-                                return
-                            }
-                            print("AccrueWebView: Starting in-app provisioning...")
-                            AppleWalletPushProvisioningManager.shared.start(
-                                from: wv,
-                                with: envelope["data"] as? [String: String] ?? [:]
-                            )
-
-                        case AccrueWebEvents.AppleWalletProvisioningSignResponse:
-                            print("AccrueWebView: Handling backend response for in-app provisioning...")
-                            if let raw = envelope["data"] as? String {
-                                AppleWalletPushProvisioningManager.shared.handleBackendResponse(rawJSON: raw)
-                            }
-
-                        default:
+                    case AccrueWebEvents.AppleWalletProvisioningRequested:
+                        // 🔑  use the saved WKWebView (fallback to message.webView when available)
+                        guard let wv = self.webView ?? message.webView else {
                             parent.onAction?(body)
+                            return
+                        }
+                        print("AccrueWebView: Starting in-app provisioning...")
+                        AppleWalletPushProvisioningManager.shared.start(
+                            from: wv,
+                            with: envelope["data"] as? [String: String] ?? [:]
+                        )
+
+                    case AccrueWebEvents.AppleWalletProvisioningSignResponse:
+                        print("AccrueWebView: Handling backend response for in-app provisioning...")
+                        if let raw = envelope["data"] as? String {
+                            AppleWalletPushProvisioningManager.shared.handleBackendResponse(
+                                rawJSON: raw)
+                        }
+
+                    default:
+                        parent.onAction?(body)
                     }
                 } else {
                     parent.onAction?(body)
@@ -157,7 +164,8 @@
                 guard let scheme = url.scheme?.lowercased() else {
                     return false
                 }
-                return !["http", "https", "mailto", "tel", "sms", "ftp"].contains(scheme)
+                // Allow wallet:// scheme along with other standard schemes
+                return !["http", "https", "mailto", "tel", "sms", "ftp", "wallet"].contains(scheme)
             }
 
             private func openSystemDeepLink(url: URL) {
@@ -212,7 +220,7 @@
             // Store the WebView instance
             Self.webViewInstances[url] = webView
 
-            context.coordinator.webView = webView   // 🆕 let the coordinator remember the instance
+            context.coordinator.webView = webView  // 🆕 let the coordinator remember the instance
 
             return webView
         }
