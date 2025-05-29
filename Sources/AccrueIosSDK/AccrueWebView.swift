@@ -82,6 +82,14 @@
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
             ) {
+                print("AccrueWebView: Deciding policy for navigation action: \(navigationAction)")
+                print("AccrueWebView: Navigation type: \(navigationAction.navigationType)")
+                print("AccrueWebView: Request: \(navigationAction.request)")
+                print("AccrueWebView: Request URL: \(navigationAction.request.url)")
+                print("AccrueWebView: Request URL host: \(navigationAction.request.url?.host)")
+                print("AccrueWebView: Request URL scheme: \(navigationAction.request.url?.scheme)")
+                print("AccrueWebView: Request URL path: \(navigationAction.request.url?.path)")
+                print("AccrueWebView: Request URL query: \(navigationAction.request.url?.query)")
                 // Only handle navigation if it was triggered by a link (not by an iframe load, script, etc.)
                 if navigationAction.navigationType == .linkActivated {
                     if let url = navigationAction.request.url {
