@@ -81,7 +81,7 @@ final class AppleWalletPushProvisioningManager: NSObject, PKAddPaymentPassViewCo
             self.webView = webView
 
             // STEP 4: Configure the payment pass request with card details
-            guard let passConfig = PKAddPaymentPassRequestConfiguration(encryptionScheme: .RSA_V2) else {
+            guard let passConfig = PKAddPaymentPassRequestConfiguration(encryptionScheme: .ECC_V2) else {
                 logger.error("Unable to create pass configuration")
                 self.notifyError(to: webView, message: "Failed to create pass configuration")
                 return
@@ -96,6 +96,8 @@ final class AppleWalletPushProvisioningManager: NSObject, PKAddPaymentPassViewCo
             passConfig.cardholderName = cardholder
             passConfig.primaryAccountSuffix = suffix
             passConfig.localizedDescription = desc
+            passConfig.paymentNetwork = .visa
+
 
             // STEP 5: Create and present the PassKit view controller
             guard let addVC = PKAddPaymentPassViewController(requestConfiguration: passConfig, delegate: self) else {
