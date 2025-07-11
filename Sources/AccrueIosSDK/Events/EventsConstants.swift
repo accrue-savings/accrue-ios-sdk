@@ -25,7 +25,7 @@ public struct AccrueEvents {
 
         /// External events exposed to the SDK consumers
         public struct ExternalEvents {
-            static let TabPressed: String = "AccrueWallet::AccrueTabPressed"
+            static let TabPressed: String = "AccrueTabPressed"
         }
     }
 
