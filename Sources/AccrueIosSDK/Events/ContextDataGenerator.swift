@@ -8,8 +8,6 @@
         // MARK: - Context Data Script Generation
 
         /// Generates the JavaScript code to inject context data into the webview
-        /// - Parameter contextData: The AccrueContextData to convert to JavaScript
-        /// - Returns: A JavaScript string that sets up the context data in the webview
         public static func generateContextDataScript(contextData: AccrueContextData) -> String {
             let userData = contextData.userData
             let settingsData = contextData.settingsData
@@ -56,9 +54,6 @@
         // MARK: - Context Data Management
 
         /// Injects context data into the webview at document start
-        /// - Parameters:
-        ///   - userController: The WKUserContentController to add the script to
-        ///   - contextData: The AccrueContextData to inject
         public static func injectContextData(
             into userController: WKUserContentController,
             contextData: AccrueContextData
@@ -75,10 +70,6 @@
         }
 
         /// Refreshes context data in an existing webview
-        /// - Parameters:
-        ///   - webView: The WKWebView to refresh context data in
-        ///   - contextData: The AccrueContextData to refresh with
-        ///   - completion: Optional completion handler
         public static func refreshContextData(
             in webView: WKWebView,
             contextData: AccrueContextData,
@@ -92,12 +83,6 @@
                 in: webView,
                 script: contextDataScript,
                 onSuccess: {
-                    // Only after successful execution, dispatch events and call custom functions
-                    WebViewCommunication.dispatchCustomEvent(
-                        to: webView,
-                        eventName: AccrueEvents.OutgoingToWebView.EventKeys.ContextChangedEvent,
-                        eventData: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
-                    )
                     WebViewCommunication.callCustomFunction(
                         to: webView,
                         functionName: AccrueEvents.OutgoingToWebView.Functions.SetContextData,
@@ -109,10 +94,6 @@
         }
 
         /// Handles context data changes and triggers appropriate actions
-        /// - Parameters:
-        ///   - webView: The WKWebView to send events to
-        ///   - action: The action to perform
-        ///   - contextData: The context data to clear the action from after processing
         public static func handleContextDataAction(
             in webView: WKWebView,
             action: String?,

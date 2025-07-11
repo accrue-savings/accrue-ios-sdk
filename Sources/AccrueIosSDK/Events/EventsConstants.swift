@@ -20,13 +20,7 @@ public struct AccrueEvents {
 
         /// Event keys to dispatch to the webview
         public struct EventKeys {
-            static let ContextChangedEvent: String = "AccrueWallet::ContextChanged"
-            // @deprecated Use GenerateAppleWalletPushProvisioningToken instead
-            static let GenerateAppleWalletPushProvisioningToken: String =
-                "AccrueWallet::AppleWalletProvisioningSignRequest"
-            // @deprecated Use GenerateAppleWalletPushProvisioningToken instead
-            static let AppleWalletProvisioningResult: String =
-                "AccrueWallet::AppleWalletProvisioningResult"
+            // @deprecated we are using Functions instead
         }
 
         /// External events exposed to the SDK consumers

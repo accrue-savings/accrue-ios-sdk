@@ -177,14 +177,6 @@ import PassKit
                         return
                     }
 
-                    // Dispatch custom event to JavaScript with certificate data
-                    // Calling both methods for backwards compatibility
-                    WebViewCommunication.dispatchCustomEvent(
-                        to: webView,
-                        eventName: AccrueEvents.OutgoingToWebView.EventKeys
-                            .GenerateAppleWalletPushProvisioningToken,
-                        eventData: jsonString
-                    )
                     WebViewCommunication.callCustomFunction(
                         to: webView,
                         functionName: AccrueEvents.OutgoingToWebView.Functions
@@ -232,13 +224,6 @@ import PassKit
                 let errorMsg = error?.localizedDescription ?? ""
 
                 // Notify JavaScript of final provisioning result
-                WebViewCommunication.dispatchCustomEvent(
-                    to: webView,
-                    eventName: AccrueEvents.OutgoingToWebView.EventKeys
-                        .AppleWalletProvisioningResult,
-                    eventData:
-                        "{\"success\": \(success), \"error\": \"\(errorMsg.replacingOccurrences(of: "\"", with: "\\\""))\"}"
-                )
                 WebViewCommunication.callCustomFunction(
                     to: webView,
                     functionName: AccrueEvents.OutgoingToWebView.Functions
@@ -373,12 +358,6 @@ import PassKit
      */
         private func notifyError(to webView: WKWebView, message: String) {
             let escapedMessage = message.replacingOccurrences(of: "\"", with: "\\\"")
-            WebViewCommunication.dispatchCustomEvent(
-                to: webView,
-                eventName: AccrueEvents.OutgoingToWebView.EventKeys
-                    .AppleWalletProvisioningResult,
-                eventData: "{\"success\": false, \"error\": \"\(escapedMessage)\"}"
-            )
             WebViewCommunication.callCustomFunction(
                 to: webView,
                 functionName: AccrueEvents.OutgoingToWebView.Functions

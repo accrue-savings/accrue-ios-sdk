@@ -8,11 +8,6 @@
         // MARK: - Outgoing Events (to WebView)
 
         /// Executes JavaScript in the webview with a success callback
-        /// - Parameters:
-        ///   - webView: The WKWebView to execute JavaScript in
-        ///   - script: The JavaScript string to execute
-        ///   - onSuccess: Callback called when execution succeeds
-        ///   - completion: Optional completion handler for the execution
         public static func executeJavaScript(
             in webView: WKWebView,
             script: String,
@@ -34,11 +29,6 @@
         }
 
         /// Calls a custom function in the webview by injecting JavaScript
-        /// - Parameters:
-        ///   - webView: The WKWebView instance to send the event to
-        ///   - functionName: The name of the JavaScript function to call
-        ///   - arguments: The arguments to pass to the function (as a JSON string)
-        ///   - completion: Optional completion handler with result and error
         public static func callCustomFunction(
             to webView: WKWebView,
             functionName: String,
@@ -69,11 +59,7 @@
         }
 
         /// Dispatches a custom event to the webview using the CustomEvent API
-        /// - Parameters:
-        ///   - webView: The WKWebView instance to send the event to
-        ///   - eventName: The name of the custom event to dispatch
-        ///   - eventData: The data to pass as the event detail (as a JSON string)
-        ///   - completion: Optional completion handler with result and error
+        // @deprecated Use useCallCustomFunction instead
         public static func dispatchCustomEvent(
             to webView: WKWebView,
             eventName: String,
@@ -108,11 +94,6 @@
         }
 
         /// Calls a custom function and clears the context data action upon success
-        /// - Parameters:
-        ///   - webView: The WKWebView instance to send the event to
-        ///   - functionName: The name of the JavaScript function to call
-        ///   - arguments: The arguments to pass to the function (as a JSON string)
-        ///   - contextData: The context data to clear the action from after successful call
         public static func callCustomFunctionAndClearAction(
             to webView: WKWebView,
             functionName: String,
@@ -130,37 +111,9 @@
             }
         }
 
-        /// Dispatches a custom event and clears the context data action upon success
-        /// - Parameters:
-        ///   - webView: The WKWebView instance to send the event to
-        ///   - eventName: The name of the custom event to dispatch
-        ///   - eventData: The data to pass as the event detail (as a JSON string)
-        ///   - contextData: The context data to clear the action from after successful dispatch
-        public static func dispatchCustomEventAndClearAction(
-            to webView: WKWebView,
-            eventName: String,
-            eventData: String = "{}",
-            contextData: AccrueContextData?
-        ) {
-            dispatchCustomEvent(
-                to: webView,
-                eventName: eventName,
-                eventData: eventData
-            ) { result, error in
-                if error == nil {
-                    contextData?.clearAction()
-                }
-            }
-        }
-
         // MARK: - Incoming Events (from WebView)
 
         /// Handles incoming events from the webview
-        /// - Parameters:
-        ///   - message: The WKScriptMessage received from the webview
-        ///   - webView: The WKWebView instance (optional, for fallback)
-        ///   - onAction: Callback for handling custom actions
-        /// - Returns: Boolean indicating if the event was handled
         public static func handleIncomingEvent(
             _ message: WKScriptMessage,
             webView: WKWebView? = nil,
@@ -192,13 +145,11 @@
                     fallbackAction: onAction,
                     originalBody: body
                 )
-                // Also call onAction for this event
                 onAction?(body)
                 return true
 
             case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningResponse:
                 handleAppleWalletProvisioningResponse(envelope: envelope)
-                // Also call onAction for this event
                 onAction?(body)
                 return true
 
@@ -209,12 +160,10 @@
                     fallbackAction: onAction,
                     originalBody: body
                 )
-                // Also call onAction for this event
                 onAction?(body)
                 return true
 
             default:
-                // For all other events (including SignIn/SignOut), just call onAction
                 onAction?(body)
                 return true
             }
