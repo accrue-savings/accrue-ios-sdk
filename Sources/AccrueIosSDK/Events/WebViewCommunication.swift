@@ -205,10 +205,12 @@
                 )
 
             case AccrueEvents.IncomingFromWebView.SignInPerformedMessage:
-                return onAction?(body)
+                onAction?(body)
+                return true
 
             case AccrueEvents.IncomingFromWebView.SignOutPerformedMessage:
-                return onAction?(body)
+                onAction?(body)
+                return true
 
             default:
                 // Log unhandled events but don't trigger any actions
