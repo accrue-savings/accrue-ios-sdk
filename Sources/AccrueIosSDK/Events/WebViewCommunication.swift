@@ -186,35 +186,36 @@
             // Handle specific event types
             switch type {
             case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningRequested:
-                return handleAppleWalletProvisioningRequested(
+                handleAppleWalletProvisioningRequested(
                     envelope: envelope,
                     webView: webView ?? message.webView,
                     fallbackAction: onAction,
                     originalBody: body
                 )
-
-            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningResponse:
-                return handleAppleWalletProvisioningResponse(envelope: envelope)
-
-            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningIsSupportedRequested:
-                return handleAppleWalletProvisioningIsSupportedRequested(
-                    envelope: envelope,
-                    webView: webView ?? message.webView,
-                    fallbackAction: onAction,
-                    originalBody: body
-                )
-
-            case AccrueEvents.IncomingFromWebView.SignInPerformedMessage:
+                // Also call onAction for this event
                 onAction?(body)
                 return true
 
-            case AccrueEvents.IncomingFromWebView.SignOutPerformedMessage:
+            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningResponse:
+                handleAppleWalletProvisioningResponse(envelope: envelope)
+                // Also call onAction for this event
+                onAction?(body)
+                return true
+
+            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningIsSupportedRequested:
+                handleAppleWalletProvisioningIsSupportedRequested(
+                    envelope: envelope,
+                    webView: webView ?? message.webView,
+                    fallbackAction: onAction,
+                    originalBody: body
+                )
+                // Also call onAction for this event
                 onAction?(body)
                 return true
 
             default:
-                // Log unhandled events but don't trigger any actions
-                print("WebViewCommunication: Unhandled event type: \(type)")
+                // For all other events (including SignIn/SignOut), just call onAction
+                onAction?(body)
                 return true
             }
         }
@@ -226,10 +227,10 @@
             webView: WKWebView?,
             fallbackAction: ((String) -> Void)?,
             originalBody: String
-        ) -> Bool {
+        ) {
             guard let wv = webView else {
                 fallbackAction?(originalBody)
-                return true
+                return
             }
 
             print("WebViewCommunication: Starting in-app provisioning...")
@@ -237,17 +238,15 @@
                 from: wv,
                 with: envelope["data"] as? [String: String] ?? [:]
             )
-            return true
         }
 
         private static func handleAppleWalletProvisioningResponse(
             envelope: [String: Any]
-        ) -> Bool {
+        ) {
             print("WebViewCommunication: Handling backend response for in-app provisioning...")
             if let raw = envelope["data"] as? String {
                 AppleWalletPushProvisioningManager.shared.handleBackendResponse(rawJSON: raw)
             }
-            return true
         }
 
         private static func handleAppleWalletProvisioningIsSupportedRequested(
@@ -255,15 +254,14 @@
             webView: WKWebView?,
             fallbackAction: ((String) -> Void)?,
             originalBody: String
-        ) -> Bool {
+        ) {
             guard let wv = webView else {
                 fallbackAction?(originalBody)
-                return true
+                return
             }
 
             print("WebViewCommunication: Checking push provisioning support...")
             AppleWalletPushProvisioningManager.shared.checkPushProvisioningSupport(from: wv)
-            return true
         }
     }
 
