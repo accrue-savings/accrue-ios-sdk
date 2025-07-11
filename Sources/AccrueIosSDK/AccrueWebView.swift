@@ -11,20 +11,26 @@
         public let url: URL
         public var contextData: AccrueContextData?
         public var onAction: ((String) -> Void)?
+        public var onEventCallback: ((@escaping (String) -> Void) -> Void)?
         @Binding var isLoading: Bool
 
         // Add a static dictionary to track WebView instances
         private static var webViewInstances: [URL: WKWebView] = [:]
 
         public init(
-            url: URL, contextData: AccrueContextData? = nil, onAction: ((String) -> Void)? = nil,
-            isLoading: Binding<Bool>
+            url: URL,
+            contextData: AccrueContextData? = nil,
+            onAction: ((String) -> Void)? = nil,
+            isLoading: Binding<Bool>,
+            onEventCallback: ((@escaping (String) -> Void) -> Void)? = nil
         ) {
             self.url = url
             self.contextData = contextData
             self.onAction = onAction
+            self.onEventCallback = onEventCallback
             self._isLoading = isLoading
         }
+
         public class Coordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate,
             WKUIDelegate
         {
@@ -47,6 +53,30 @@
                     onAction: parent.onAction
                 )
             }
+
+            // Method to send events directly to webview
+            public func sendEventToWebView(event: String) {
+                guard let webView = self.webView else {
+                    print("❌ AccrueWebView: No webview reference available")
+                    return
+                }
+
+                print("📤 AccrueWebView: Sending event to webview: \(event)")
+
+                // Handle different event types
+                switch event {
+                case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
+                    print("📱 AccrueWebView: Processing TabPressed event")
+                    WebViewCommunication.callCustomFunction(
+                        to: webView,
+                        functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen
+                    )
+                    print("✅ AccrueWebView: TabPressed event processed successfully")
+                default:
+                    print("❌ AccrueWebView: Event not supported: \(event)")
+                }
+            }
+
             // Intercept navigation actions for internal vs external URLs
             public func webView(
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
@@ -165,6 +195,7 @@
         public func makeCoordinator() -> Coordinator {
             Coordinator(parent: self)
         }
+
         public func makeUIView(context: Context) -> WKWebView {
             // Check if we already have a WebView instance for this URL
             if let existingWebView = Self.webViewInstances[url] {
@@ -208,8 +239,14 @@
 
             context.coordinator.webView = webView  // 🆕 let the coordinator remember the instance
 
+            // Setup event callback for direct communication
+            onEventCallback? { event in
+                context.coordinator.sendEventToWebView(event: event)
+            }
+
             return webView
         }
+
         public func updateUIView(_ uiView: WKWebView, context: Context) {
             // Only load the URL if it's different from the current one
             if url != uiView.url {
@@ -218,11 +255,10 @@
                 uiView.load(request)
             }
 
-            // Refresh context data using ContextDataGenerator
+            // Refresh context data using ContextDataGenerator (but not actions)
             if let contextData = contextData {
                 ContextDataGenerator.refreshContextData(in: uiView, contextData: contextData)
-                ContextDataGenerator.handleContextDataAction(
-                    in: uiView, action: contextData.actions.action, contextData: contextData)
+                // Remove the handleContextDataAction call from here since we handle events directly now
             }
         }
 
@@ -242,6 +278,7 @@
             // Clear website data
             clearWebsiteData()
         }
+
         // Trigger a context data refresh
         public func triggerContextDataRefresh() {
             let instance = Self.webViewInstances[url]

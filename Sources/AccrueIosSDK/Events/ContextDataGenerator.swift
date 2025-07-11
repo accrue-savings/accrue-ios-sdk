@@ -92,37 +92,6 @@
                 completion: completion
             )
         }
-
-        /// Handles context data changes and triggers appropriate actions
-        public static func handleContextDataAction(
-            in webView: WKWebView,
-            action: String?,
-            contextData: AccrueContextData? = nil
-        ) {
-            print(
-                "🔍 ContextDataGenerator.handleContextDataAction called with action: \(action ?? "nil")"
-            )
-
-            guard let action = action else {
-                print(
-                    "⚠️ ContextDataGenerator.handleContextDataAction: No action provided, returning early"
-                )
-                return
-            }
-
-            switch action {
-            case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
-                print("📱 ContextDataGenerator: Processing TabPressed event")
-                WebViewCommunication.callCustomFunctionAndClearAction(
-                    to: webView,
-                    functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen,
-                    contextData: contextData
-                )
-                print("✅ ContextDataGenerator: TabPressed event processed successfully")
-            default:
-                print("❌ ContextDataGenerator: Event not supported: \(action)")
-            }
-        }
     }
 
 #endif

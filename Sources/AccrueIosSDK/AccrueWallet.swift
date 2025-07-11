@@ -9,6 +9,7 @@ public struct AccrueWallet: View {
     public var onAction: ((String) -> Void)?
     public var shouldShowLoader: Bool = true
     @State private var isLoading: Bool = false
+    @State private var sendEventCallback: ((String) -> Void)?
 
     @ObservedObject public var contextData: AccrueContextData
     #if os(iOS)
@@ -16,8 +17,20 @@ public struct AccrueWallet: View {
             let fallbackUrl = URL(string: AppConstants.productionUrl)!
             let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
 
-            return AccrueWebView(
-                url: url, contextData: contextData, onAction: onAction, isLoading: $isLoading)
+            let webView = AccrueWebView(
+                url: url,
+                contextData: contextData,
+                onAction: onAction,
+                isLoading: $isLoading,
+                onEventCallback: { callback in
+                    // Store the callback for sending events
+                    DispatchQueue.main.async {
+                        self.sendEventCallback = callback
+                    }
+                }
+            )
+
+            return webView
         }
     #endif
 
@@ -56,12 +69,18 @@ public struct AccrueWallet: View {
 
     public func handleEvent(event: String) {
         print("🔍 AccrueWallet.handleEvent called with event: \(event)")
-        contextData.setAction(action: event)
-        print("✅ AccrueWallet.handleEvent completed - event set on contextData")
+
+        #if os(iOS)
+            // Send event directly to webview using callback
+            sendEventCallback?(event)
+        #endif
+
+        print("✅ AccrueWallet.handleEvent completed - event sent to webview")
     }
 
     private func propagateContextDataChanges() {
         #if os(iOS)
+            // Only refresh context data, not actions
             let webView = WebViewComponent
             webView.triggerContextDataRefresh()
         #endif
