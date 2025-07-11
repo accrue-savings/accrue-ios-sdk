@@ -7,6 +7,32 @@
 
         // MARK: - Outgoing Events (to WebView)
 
+        /// Executes JavaScript in the webview with a success callback
+        /// - Parameters:
+        ///   - webView: The WKWebView to execute JavaScript in
+        ///   - script: The JavaScript string to execute
+        ///   - onSuccess: Callback called when execution succeeds
+        ///   - completion: Optional completion handler for the execution
+        public static func executeJavaScript(
+            in webView: WKWebView,
+            script: String,
+            onSuccess: @escaping () -> Void,
+            completion: ((Any?, Error?) -> Void)? = nil
+        ) {
+            webView.evaluateJavaScript(script) { result, error in
+                if let error = error {
+                    print(
+                        "WebViewCommunication: Error executing JavaScript: \(error.localizedDescription)"
+                    )
+                    completion?(result, error)
+                } else {
+                    print("WebViewCommunication: JavaScript executed successfully")
+                    onSuccess()
+                    completion?(result, error)
+                }
+            }
+        }
+
         /// Calls a custom function in the webview by injecting JavaScript
         /// - Parameters:
         ///   - webView: The WKWebView instance to send the event to

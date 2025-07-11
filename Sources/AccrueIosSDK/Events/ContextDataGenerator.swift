@@ -51,18 +51,6 @@
                      
                 })();
                 """
-
-            // Calling both methods for backwards compatibility
-            WebViewCommunication.dispatchCustomEvent(
-                to: webView,
-                eventName: AccrueEvents.OutgoingToWebView.EventKeys.ContextChangedEvent,
-                eventData: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
-            )
-            WebViewCommunication.callCustomFunction(
-                to: webView,
-                functionName: AccrueEvents.OutgoingToWebView.Functions.SetContextData,
-                arguments: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
-            )
         }
 
         // MARK: - Context Data Management
@@ -99,16 +87,25 @@
             let contextDataScript = generateContextDataScript(contextData: contextData)
             print("ContextDataGenerator: Refreshing contextData: \(contextDataScript)")
 
-            webView.evaluateJavaScript(contextDataScript) { result, error in
-                if let error = error {
-                    print(
-                        "ContextDataGenerator: Error refreshing context data: \(error.localizedDescription)"
+            // First execute the JavaScript to set up the context data in the window object
+            WebViewCommunication.executeJavaScript(
+                in: webView,
+                script: contextDataScript,
+                onSuccess: {
+                    // Only after successful execution, dispatch events and call custom functions
+                    WebViewCommunication.dispatchCustomEvent(
+                        to: webView,
+                        eventName: AccrueEvents.OutgoingToWebView.EventKeys.ContextChangedEvent,
+                        eventData: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
                     )
-                } else {
-                    print("ContextDataGenerator: Context data refreshed successfully")
-                }
-                completion?(result, error)
-            }
+                    WebViewCommunication.callCustomFunction(
+                        to: webView,
+                        functionName: AccrueEvents.OutgoingToWebView.Functions.SetContextData,
+                        arguments: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
+                    )
+                },
+                completion: completion
+            )
         }
 
         /// Handles context data changes and triggers appropriate actions
