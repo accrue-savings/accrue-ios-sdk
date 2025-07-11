@@ -253,6 +253,33 @@ import PassKit
         // MARK: - Backend Response Handler (Called from JavaScript)
 
         /**
+         * Checks if Apple Wallet push provisioning is supported on this device
+         *
+         * This function checks device capabilities for adding payment passes to Apple Wallet
+         * and sends the result back to the webview via custom events.
+         *
+         * @param webView The web view that requested the support check
+         */
+        func checkPushProvisioningSupport(from webView: WKWebView) {
+            DispatchQueue.main.async { [weak self] in
+                // Check if device supports adding passes to Apple Wallet
+                let isSupported = PKAddPaymentPassViewController.canAddPaymentPass()
+
+                logger.info("Push provisioning support check: \(isSupported)")
+
+                // Prepare response data
+                let responseData = "{\"isSupported\": \(isSupported)}"
+
+                WebViewCommunication.callCustomFunction(
+                    to: webView,
+                    functionName: AccrueEvents.OutgoingToWebView.Functions
+                        .AppleWalletProvisioningIsSupportedResponse,
+                    arguments: responseData
+                )
+            }
+        }
+
+        /**
      * Processes the backend response with encrypted pass data
      *
      * After JavaScript sends certificate data to the backend, the backend returns

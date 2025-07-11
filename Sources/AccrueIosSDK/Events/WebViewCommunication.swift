@@ -170,6 +170,14 @@
             case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningResponse:
                 return handleAppleWalletProvisioningResponse(envelope: envelope)
 
+            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningIsSupportedRequested:
+                return handleAppleWalletProvisioningIsSupportedRequested(
+                    envelope: envelope,
+                    webView: webView ?? message.webView,
+                    fallbackAction: onAction,
+                    originalBody: body
+                )
+
             default:
                 // Pass unhandled events to the generic handler
                 onAction?(body)
@@ -205,6 +213,22 @@
             if let raw = envelope["data"] as? String {
                 AppleWalletPushProvisioningManager.shared.handleBackendResponse(rawJSON: raw)
             }
+            return true
+        }
+
+        private static func handleAppleWalletProvisioningIsSupportedRequested(
+            envelope: [String: Any],
+            webView: WKWebView?,
+            fallbackAction: ((String) -> Void)?,
+            originalBody: String
+        ) -> Bool {
+            guard let wv = webView else {
+                fallbackAction?(originalBody)
+                return true
+            }
+
+            print("WebViewCommunication: Checking push provisioning support...")
+            AppleWalletPushProvisioningManager.shared.checkPushProvisioningSupport(from: wv)
             return true
         }
     }
