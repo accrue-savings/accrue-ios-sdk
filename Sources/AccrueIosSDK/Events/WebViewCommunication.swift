@@ -47,11 +47,11 @@
             webView.evaluateJavaScript(script) { result, error in
                 if let error = error {
                     print(
-                        "WebViewCommunication: JavaScript injection error: \(error.localizedDescription)"
+                        "WebViewCommunication: JavaScript injection error for function '\(functionName)': \(error.localizedDescription)"
                     )
                 } else {
                     print(
-                        "WebViewCommunication: JavaScript executed successfully: \(String(describing: result))"
+                        "WebViewCommunication: JavaScript function '\(functionName)' executed successfully: \(String(describing: result))"
                     )
                 }
                 completion?(result, error)
