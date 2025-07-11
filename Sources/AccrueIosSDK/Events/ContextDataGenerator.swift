@@ -99,17 +99,28 @@
             action: String?,
             contextData: AccrueContextData? = nil
         ) {
-            guard let action = action else { return }
+            print(
+                "🔍 ContextDataGenerator.handleContextDataAction called with action: \(action ?? "nil")"
+            )
+
+            guard let action = action else {
+                print(
+                    "⚠️ ContextDataGenerator.handleContextDataAction: No action provided, returning early"
+                )
+                return
+            }
 
             switch action {
             case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
+                print("📱 ContextDataGenerator: Processing TabPressed event")
                 WebViewCommunication.callCustomFunctionAndClearAction(
                     to: webView,
                     functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen,
                     contextData: contextData
                 )
+                print("✅ ContextDataGenerator: TabPressed event processed successfully")
             default:
-                print("ContextDataGenerator: Event not supported: \(action)")
+                print("❌ ContextDataGenerator: Event not supported: \(action)")
             }
         }
     }

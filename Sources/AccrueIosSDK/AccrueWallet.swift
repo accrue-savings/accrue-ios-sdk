@@ -55,7 +55,9 @@ public struct AccrueWallet: View {
     }
 
     public func handleEvent(event: String) {
+        print("🔍 AccrueWallet.handleEvent called with event: \(event)")
         contextData.setAction(action: event)
+        print("✅ AccrueWallet.handleEvent completed - event set on contextData")
     }
 
     private func propagateContextDataChanges() {
