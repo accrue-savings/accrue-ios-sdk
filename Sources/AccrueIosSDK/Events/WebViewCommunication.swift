@@ -205,8 +205,8 @@
                 )
 
             default:
-                // Pass unhandled events to the generic handler
-                onAction?(body)
+                // Log unhandled events but don't trigger any actions
+                print("WebViewCommunication: Unhandled event type: \(type)")
                 return true
             }
         }
