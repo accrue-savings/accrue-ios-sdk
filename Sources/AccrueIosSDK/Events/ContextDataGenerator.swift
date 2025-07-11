@@ -19,7 +19,7 @@
 
             return """
                 (function() {
-                      window["\(AccrueEvents.IncomingFromWebView.EventHandlerName)"] = {
+                      window["\(AccrueEvents.EventHandlerName)"] = {
                           "contextData": {
                               "userData": {
                                   "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
@@ -48,13 +48,21 @@
                               }
                           }
                       };
-                      // Notify the web page that contextData has been updated
-                      var event = new CustomEvent("\(AccrueEvents.OutgoingToWebView.ContextChangedEvent)", {
-                        detail: window["\(AccrueEvents.IncomingFromWebView.EventHandlerName)"].contextData
-                      });
-                      window.dispatchEvent(event);
+                     
                 })();
                 """
+
+            // Calling both methods for backwards compatibility
+            WebViewCommunication.dispatchCustomEvent(
+                to: webView,
+                eventName: AccrueEvents.OutgoingToWebView.EventKeys.ContextChangedEvent,
+                eventData: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
+            )
+            WebViewCommunication.callCustomFunction(
+                to: webView,
+                functionName: AccrueEvents.OutgoingToWebView.Functions.SetContextData,
+                arguments: "window[\"\(AccrueEvents.EventHandlerName)\"].contextData"
+            )
         }
 
         // MARK: - Context Data Management
@@ -116,10 +124,10 @@
             guard let action = action else { return }
 
             switch action {
-            case AccrueEvents.OutgoingToWebView.TabPressed:
-                WebViewCommunication.sendCustomEventAndClearAction(
+            case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
+                WebViewCommunication.callCustomFunctionAndClearAction(
                     to: webView,
-                    eventName: AccrueEvents.OutgoingToWebView.GoToHomeScreen,
+                    functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen,
                     contextData: contextData
                 )
             default:

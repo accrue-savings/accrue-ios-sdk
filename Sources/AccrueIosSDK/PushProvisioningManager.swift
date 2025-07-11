@@ -178,20 +178,20 @@ import PassKit
                     }
 
                     // Dispatch custom event to JavaScript with certificate data
-                    let script = """
-                        window.dispatchEvent(new CustomEvent('\(AccrueEvents.OutgoingToWebView.AppleWalletProvisioningSignRequest)', { 
-                            detail: \(jsonString) 
-                        }));
-                        """
+                    // Calling both methods for backwards compatibility
+                    WebViewCommunication.dispatchCustomEvent(
+                        to: webView,
+                        eventName: AccrueEvents.OutgoingToWebView.EventKeys
+                            .AppleWalletProvisioningSignRequest,
+                        eventData: jsonString
+                    )
+                    WebViewCommunication.callCustomFunction(
+                        to: webView,
+                        functionName: AccrueEvents.OutgoingToWebView.Functions
+                            .AppleWalletProvisioningSignRequest,
+                        arguments: jsonString
+                    )
 
-                    webView.evaluateJavaScript(script) { result, error in
-                        if let error = error {
-                            logger.error(
-                                "JS evaluation error: \(error.localizedDescription, privacy: .public)"
-                            )
-                            self?.completeWithError("Failed to notify JavaScript")
-                        }
-                    }
                 }
             } catch {
                 logger.error(
@@ -232,21 +232,21 @@ import PassKit
                 let errorMsg = error?.localizedDescription ?? ""
 
                 // Notify JavaScript of final provisioning result
-                let script = """
-                    window.dispatchEvent(new CustomEvent('\(AccrueEvents.OutgoingToWebView.AppleWalletProvisioningResult)', { 
-                        detail: { 
-                            success: \(success), 
-                            error: "\(errorMsg.replacingOccurrences(of: "\"", with: "\\\""))" 
-                        } 
-                    }));
-                    """
+                WebViewCommunication.dispatchCustomEvent(
+                    to: webView,
+                    eventName: AccrueEvents.OutgoingToWebView.EventKeys
+                        .AppleWalletProvisioningResult,
+                    eventData:
+                        "{\"success\": \(success), \"error\": \"\(errorMsg.replacingOccurrences(of: "\"", with: "\\\""))\"}"
+                )
+                WebViewCommunication.callCustomFunction(
+                    to: webView,
+                    functionName: AccrueEvents.OutgoingToWebView.Functions
+                        .AppleWalletProvisioningResult,
+                    arguments:
+                        "{\"success\": \(success), \"error\": \"\(errorMsg.replacingOccurrences(of: "\"", with: "\\\""))\"}"
+                )
 
-                webView.evaluateJavaScript(script) { result, error in
-                    if let error = error {
-                        logger.error(
-                            "JS evaluation error: \(error.localizedDescription, privacy: .public)")
-                    }
-                }
             }
         }
 
@@ -346,12 +346,19 @@ import PassKit
      */
         private func notifyError(to webView: WKWebView, message: String) {
             let escapedMessage = message.replacingOccurrences(of: "\"", with: "\\\"")
-            let script = """
-                window.dispatchEvent(new CustomEvent('\(AccrueEvents.OutgoingToWebView.AppleWalletProvisioningResult)', { 
-                    detail: { success: false, error: "\(escapedMessage)" } 
-                }));
-                """
-            webView.evaluateJavaScript(script, completionHandler: nil)
+            WebViewCommunication.dispatchCustomEvent(
+                to: webView,
+                eventName: AccrueEvents.OutgoingToWebView.EventKeys
+                    .AppleWalletProvisioningResult,
+                eventData: "{\"success\": false, \"error\": \"\(escapedMessage)\"}"
+            )
+            WebViewCommunication.callCustomFunction(
+                to: webView,
+                functionName: AccrueEvents.OutgoingToWebView.Functions
+                    .AppleWalletProvisioningResult,
+                arguments: "{\"success\": false, \"error\": \"\(escapedMessage)\"}"
+            )
+
         }
 
         /**

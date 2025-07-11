@@ -1,7 +1,8 @@
 import XCTest
-@testable import accrue_ios_sdk
 
-final class accrue_ios_sdkTests: XCTestCase {
+@testable import AccrueIosSDK
+
+final class AccrueIosSDKTests: XCTestCase {
     func testExample() throws {
         // XCTest Documentation
         // https://developer.apple.com/documentation/xctest

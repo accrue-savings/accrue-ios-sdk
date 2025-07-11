@@ -7,22 +7,22 @@
 
         // MARK: - Outgoing Events (to WebView)
 
-        /// Sends a custom event to the webview by injecting JavaScript
+        /// Calls a custom function in the webview by injecting JavaScript
         /// - Parameters:
         ///   - webView: The WKWebView instance to send the event to
-        ///   - eventName: The name of the JavaScript function to call
+        ///   - functionName: The name of the JavaScript function to call
         ///   - arguments: The arguments to pass to the function (as a JSON string)
         ///   - completion: Optional completion handler with result and error
-        public static func sendCustomEvent(
+        public static func callCustomFunction(
             to webView: WKWebView,
-            eventName: String,
+            functionName: String,
             arguments: String = "",
             completion: ((Any?, Error?) -> Void)? = nil
         ) {
             let script = """
                 (function() {
-                    if (typeof window !== "undefined" && typeof window.\(eventName) === "function") {
-                        window.\(eventName)(\(arguments));
+                    if (typeof window !== "undefined" && typeof window.\(functionName) === "function") {
+                        window.\(functionName)(\(arguments));
                     }
                     return "Script injected successfully";
                 })();
@@ -42,22 +42,84 @@
             }
         }
 
-        /// Sends a custom event and clears the context data action upon success
+        /// Dispatches a custom event to the webview using the CustomEvent API
         /// - Parameters:
         ///   - webView: The WKWebView instance to send the event to
-        ///   - eventName: The name of the JavaScript function to call
-        ///   - arguments: The arguments to pass to the function (as a JSON string)
-        ///   - contextData: The context data to clear the action from after successful send
-        public static func sendCustomEventAndClearAction(
+        ///   - eventName: The name of the custom event to dispatch
+        ///   - eventData: The data to pass as the event detail (as a JSON string)
+        ///   - completion: Optional completion handler with result and error
+        public static func dispatchCustomEvent(
             to webView: WKWebView,
             eventName: String,
+            eventData: String = "{}",
+            completion: ((Any?, Error?) -> Void)? = nil
+        ) {
+            let script = """
+                (function() {
+                    if (typeof window !== "undefined") {
+                        var event = new CustomEvent("\(eventName)", {
+                            detail: \(eventData)
+                        });
+                        window.dispatchEvent(event);
+                        return "Custom event dispatched successfully";
+                    }
+                    return "Window not available";
+                })();
+                """
+
+            webView.evaluateJavaScript(script) { result, error in
+                if let error = error {
+                    print(
+                        "WebViewCommunication: Custom event dispatch error: \(error.localizedDescription)"
+                    )
+                } else {
+                    print(
+                        "WebViewCommunication: Custom event dispatched successfully: \(String(describing: result))"
+                    )
+                }
+                completion?(result, error)
+            }
+        }
+
+        /// Calls a custom function and clears the context data action upon success
+        /// - Parameters:
+        ///   - webView: The WKWebView instance to send the event to
+        ///   - functionName: The name of the JavaScript function to call
+        ///   - arguments: The arguments to pass to the function (as a JSON string)
+        ///   - contextData: The context data to clear the action from after successful call
+        public static func callCustomFunctionAndClearAction(
+            to webView: WKWebView,
+            functionName: String,
             arguments: String = "",
             contextData: AccrueContextData?
         ) {
-            sendCustomEvent(
+            callCustomFunction(
+                to: webView,
+                functionName: functionName,
+                arguments: arguments
+            ) { result, error in
+                if error == nil {
+                    contextData?.clearAction()
+                }
+            }
+        }
+
+        /// Dispatches a custom event and clears the context data action upon success
+        /// - Parameters:
+        ///   - webView: The WKWebView instance to send the event to
+        ///   - eventName: The name of the custom event to dispatch
+        ///   - eventData: The data to pass as the event detail (as a JSON string)
+        ///   - contextData: The context data to clear the action from after successful dispatch
+        public static func dispatchCustomEventAndClearAction(
+            to webView: WKWebView,
+            eventName: String,
+            eventData: String = "{}",
+            contextData: AccrueContextData?
+        ) {
+            dispatchCustomEvent(
                 to: webView,
                 eventName: eventName,
-                arguments: arguments
+                eventData: eventData
             ) { result, error in
                 if error == nil {
                     contextData?.clearAction()
