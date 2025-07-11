@@ -182,13 +182,13 @@ import PassKit
                     WebViewCommunication.dispatchCustomEvent(
                         to: webView,
                         eventName: AccrueEvents.OutgoingToWebView.EventKeys
-                            .AppleWalletProvisioningSignRequest,
+                            .GenerateAppleWalletPushProvisioningToken,
                         eventData: jsonString
                     )
                     WebViewCommunication.callCustomFunction(
                         to: webView,
                         functionName: AccrueEvents.OutgoingToWebView.Functions
-                            .AppleWalletProvisioningSignRequest,
+                            .GenerateAppleWalletPushProvisioningToken,
                         arguments: jsonString
                     )
 

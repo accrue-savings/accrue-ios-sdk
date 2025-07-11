@@ -195,7 +195,7 @@
             // Add the script message handler
             let userContentController = webView.configuration.userContentController
             userContentController.add(
-                context.coordinator, name: AccrueEvents.IncomingFromWebView.EventHandlerName)
+                context.coordinator, name: AccrueEvents.EventHandlerName)
 
             // Inject JavaScript to set context data using ContextDataGenerator
             if let contextData = contextData {

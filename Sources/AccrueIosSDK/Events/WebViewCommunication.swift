@@ -142,7 +142,7 @@
         ) -> Bool {
             print("WebViewCommunication: Received message: \(message.body)")
 
-            guard message.name == AccrueEvents.IncomingFromWebView.EventHandlerName,
+            guard message.name == AccrueEvents.EventHandlerName,
                 let body = message.body as? String
             else {
                 return false
@@ -167,8 +167,8 @@
                     originalBody: body
                 )
 
-            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningSignResponse:
-                return handleAppleWalletProvisioningSignResponse(envelope: envelope)
+            case AccrueEvents.IncomingFromWebView.AppleWalletProvisioningResponse:
+                return handleAppleWalletProvisioningResponse(envelope: envelope)
 
             default:
                 // Pass unhandled events to the generic handler
@@ -198,7 +198,7 @@
             return true
         }
 
-        private static func handleAppleWalletProvisioningSignResponse(
+        private static func handleAppleWalletProvisioningResponse(
             envelope: [String: Any]
         ) -> Bool {
             print("WebViewCommunication: Handling backend response for in-app provisioning...")
