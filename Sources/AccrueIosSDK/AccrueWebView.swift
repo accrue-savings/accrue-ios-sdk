@@ -40,42 +40,12 @@
                 _ userContentController: WKUserContentController,
                 didReceive message: WKScriptMessage
             ) {
-                print("AccrueWebView: Received message: \(message.body)")
-                guard message.name == AccrueWebEvents.EventHandlerName,
-                    let body = message.body as? String
-                else { return }
-
-                if let data = body.data(using: .utf8),
-                    let envelope = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                    let type = envelope["key"] as? String
-                {
-
-                    switch type {
-                    case AccrueWebEvents.AppleWalletProvisioningRequested:
-                        // 🔑  use the saved WKWebView (fallback to message.webView when available)
-                        guard let wv = self.webView ?? message.webView else {
-                            parent.onAction?(body)
-                            return
-                        }
-                        print("AccrueWebView: Starting in-app provisioning...")
-                        AppleWalletPushProvisioningManager.shared.start(
-                            from: wv,
-                            with: envelope["data"] as? [String: String] ?? [:]
-                        )
-
-                    case AccrueWebEvents.AppleWalletProvisioningSignResponse:
-                        print("AccrueWebView: Handling backend response for in-app provisioning...")
-                        if let raw = envelope["data"] as? String {
-                            AppleWalletPushProvisioningManager.shared.handleBackendResponse(
-                                rawJSON: raw)
-                        }
-
-                    default:
-                        parent.onAction?(body)
-                    }
-                } else {
-                    parent.onAction?(body)
-                }
+                // Use WebViewCommunication to handle incoming events
+                _ = WebViewCommunication.handleIncomingEvent(
+                    message,
+                    webView: self.webView,
+                    onAction: parent.onAction
+                )
             }
             // Intercept navigation actions for internal vs external URLs
             public func webView(
@@ -224,10 +194,14 @@
 
             // Add the script message handler
             let userContentController = webView.configuration.userContentController
-            userContentController.add(context.coordinator, name: AccrueWebEvents.EventHandlerName)
+            userContentController.add(
+                context.coordinator, name: AccrueEvents.IncomingFromWebView.EventHandlerName)
 
-            // Inject JavaScript to set context data
-            insertContextData(userController: userContentController)
+            // Inject JavaScript to set context data using ContextDataGenerator
+            if let contextData = contextData {
+                ContextDataGenerator.injectContextData(
+                    into: userContentController, contextData: contextData)
+            }
 
             // Store the WebView instance
             Self.webViewInstances[url] = webView
@@ -244,131 +218,12 @@
                 uiView.load(request)
             }
 
-            // Refresh context data
-            refreshContextData(webView: uiView)
-            if let action = contextData?.actions.action {
-                sendEventsToWebView(webView: uiView, action: action)
-            }
-        }
-
-        private func sendEventsToWebView(webView: WKWebView, action: String?) {
-            if action == "AccrueTabPressed" {
-                sendCustomEventGoToHomeScreen(webView: webView)
-            } else {
-                print("Event not supported: \(action)")
-            }
-        }
-
-        private func refreshContextData(webView: WKWebView) {
+            // Refresh context data using ContextDataGenerator
             if let contextData = contextData {
-                let contextDataScript = generateContextDataScript(contextData: contextData)
-                print("Refreshing contextData: \(contextDataScript)")
-                webView.evaluateJavaScript(contextDataScript)
+                ContextDataGenerator.refreshContextData(in: uiView, contextData: contextData)
+                ContextDataGenerator.handleContextDataAction(
+                    in: uiView, action: contextData.actions.action, contextData: contextData)
             }
-        }
-
-        private func insertContextData(userController: WKUserContentController) {
-            if let contextData = contextData {
-                let contextDataScript = generateContextDataScript(contextData: contextData)
-                print("Inserting contextData: \(contextDataScript)")
-                let userScript = WKUserScript(
-                    source: contextDataScript, injectionTime: .atDocumentStart,
-                    forMainFrameOnly: false)
-                userController.addUserScript(userScript)
-            }
-        }
-        // Generate JavaScript for Context Data
-        private func generateContextDataScript(contextData: AccrueContextData) -> String {
-            let userData = contextData.userData
-            let settingsData = contextData.settingsData
-            let deviceContextData = AccrueDeviceContextData()
-            let additionalDataJSON = UserDataHelper.parseDictionaryToJSONString(
-                contextData.userData.additionalData)
-            return """
-                (function() {
-                      window["\(AccrueWebEvents.EventHandlerName)"] = {
-                          "contextData": {
-                              "userData": {
-                                  "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
-                                  "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
-                                  "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null"),
-                                  "additionalData": \(additionalDataJSON)
-                              },
-                              "settingsData": {
-                                  "shouldInheritAuthentication": \(settingsData.shouldInheritAuthentication)
-                              },
-                              "deviceData": {
-                                  "sdk": "\(deviceContextData.sdk)",
-                                  "sdkVersion": "\(deviceContextData.sdkVersion ?? "null")",
-                                  "brand": "\(deviceContextData.brand ?? "null")",
-                                  "deviceName": "\(deviceContextData.deviceName ?? "null")",
-                                  "deviceType": "\(deviceContextData.deviceType ?? "")",
-                                  "deviceYearClass": "\(deviceContextData.deviceYearClass ?? 0)",
-                                  "isDevice": \(deviceContextData.isDevice),
-                                  "manufacturer": "\(deviceContextData.manufacturer ?? "null")",
-                                  "modelName": "\(deviceContextData.modelName ?? "null")",
-                                  "osBuildId": "\(deviceContextData.osBuildId ?? "null")",
-                                  "osInternalBuildId": "\(deviceContextData.osInternalBuildId ?? "null")",
-                                  "osName": "\(deviceContextData.osName ?? "null")",
-                                  "osVersion": "\(deviceContextData.osVersion ?? "null")",
-                                  "modelId": "\(deviceContextData.modelId ?? "null")"
-                              }
-                          }
-                      };
-                      // Notify the web page that contextData has been updated
-                      var event = new CustomEvent("\(AccrueWebEvents.AccrueWalletContextChangedEventKey)", {
-                        detail: window["\(AccrueWebEvents.EventHandlerName)"].contextData
-                      });
-                      window.dispatchEvent(event);
-                })();
-                """
-        }
-
-        public func sendCustomEventGoToHomeScreen(webView: WKWebView) {
-            sendCustomEvent(
-                webView: webView,
-                eventName: "__GO_TO_HOME_SCREEN",
-                arguments: ""
-            )
-        }
-
-        public func sendCustomEvent(
-            webView: WKWebView,
-            eventName: String,
-            arguments: String = ""
-        ) {
-
-            injectEvent(
-                webView: webView,
-                functionIdentifier: eventName,
-                functionArguments: arguments
-            )
-        }
-
-        private func injectEvent(
-            webView: WKWebView,
-            functionIdentifier: String,
-            functionArguments: String
-        ) {
-
-            let script = """
-                (function() {
-                    if (typeof window !== "undefined" && typeof window.\(functionIdentifier) === "function") {
-                        window.\(functionIdentifier)(\(functionArguments));
-                    }
-                    return "Script injected successfully";
-                })();
-                """
-            webView.evaluateJavaScript(script) { result, error in
-                if let error = error {
-                    print("JavaScript injection error: \(error.localizedDescription)")
-                } else {
-                    print("JavaScript executed successfully: \(String(describing: result))")
-
-                }
-                contextData?.clearAction()
-            }
-
         }
 
         public static func clearWebsiteData() {
@@ -390,8 +245,8 @@
         // Trigger a context data refresh
         public func triggerContextDataRefresh() {
             let instance = Self.webViewInstances[url]
-            if let webView = instance {
-                refreshContextData(webView: webView)
+            if let webView = instance, let contextData = contextData {
+                ContextDataGenerator.refreshContextData(in: webView, contextData: contextData)
             } else {
                 print("AccrueWebView: No web view found")
             }
