@@ -93,24 +93,6 @@
             }
         }
 
-        /// Calls a custom function and clears the context data action upon success
-        public static func callCustomFunctionAndClearAction(
-            to webView: WKWebView,
-            functionName: String,
-            arguments: String = "",
-            contextData: AccrueContextData?
-        ) {
-            callCustomFunction(
-                to: webView,
-                functionName: functionName,
-                arguments: arguments
-            ) { result, error in
-                if error == nil {
-                    contextData?.clearAction()
-                }
-            }
-        }
-
         // MARK: - Incoming Events (from WebView)
 
         /// Handles incoming events from the webview
