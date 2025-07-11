@@ -11,7 +11,6 @@
         public let url: URL
         public var contextData: AccrueContextData?
         public var onAction: ((String) -> Void)?
-        public var onEventCallback: ((@escaping (String) -> Void) -> Void)?
         @Binding var isLoading: Bool
 
         // Add a static dictionary to track WebView instances
@@ -21,13 +20,11 @@
             url: URL,
             contextData: AccrueContextData? = nil,
             onAction: ((String) -> Void)? = nil,
-            isLoading: Binding<Bool>,
-            onEventCallback: ((@escaping (String) -> Void) -> Void)? = nil
+            isLoading: Binding<Bool>
         ) {
             self.url = url
             self.contextData = contextData
             self.onAction = onAction
-            self.onEventCallback = onEventCallback
             self._isLoading = isLoading
         }
 
@@ -52,32 +49,6 @@
                     webView: self.webView,
                     onAction: parent.onAction
                 )
-            }
-
-            // Method to send events directly to webview
-            public func sendEventToWebView(event: String) {
-                print("🔍 AccrueWebView.Coordinator.sendEventToWebView called with event: \(event)")
-
-                guard let webView = self.webView else {
-                    print("❌ AccrueWebView: No webview reference available in coordinator")
-                    return
-                }
-
-                print("📤 AccrueWebView: Sending event to webview: \(event)")
-
-                // Handle different event types
-                switch event {
-                case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
-                    print("📱 AccrueWebView: Processing TabPressed event via coordinator")
-                    WebViewCommunication.callCustomFunction(
-                        to: webView,
-                        functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen
-                    )
-                    print(
-                        "✅ AccrueWebView: TabPressed event processed successfully via coordinator")
-                default:
-                    print("❌ AccrueWebView: Event not supported via coordinator: \(event)")
-                }
             }
 
             // Intercept navigation actions for internal vs external URLs
@@ -242,12 +213,6 @@
 
             context.coordinator.webView = webView  // 🆕 let the coordinator remember the instance
 
-            // Setup event callback for direct communication
-            onEventCallback? { event in
-                print("🎯 AccrueWebView: onEventCallback triggered with event: \(event)")
-                context.coordinator.sendEventToWebView(event: event)
-            }
-
             return webView
         }
 
@@ -285,27 +250,23 @@
 
         // Static method to send events directly using stored webview instances
         public static func sendEventDirectly(to url: URL, event: String) {
-            print("🔍 AccrueWebView.sendEventDirectly called for URL: \(url) with event: \(event)")
+            print("📤 AccrueWebView: Sending event '\(event)' to webview")
 
             guard let webView = webViewInstances[url] else {
-                print("❌ AccrueWebView.sendEventDirectly: No webview found for URL: \(url)")
-                print("📋 Available webview URLs: \(Array(webViewInstances.keys))")
+                print("❌ AccrueWebView: No webview found for URL: \(url)")
                 return
             }
-
-            print("📤 AccrueWebView.sendEventDirectly: Found webview, sending event: \(event)")
 
             // Handle different event types directly
             switch event {
             case AccrueEvents.OutgoingToWebView.ExternalEvents.TabPressed:
-                print("📱 AccrueWebView.sendEventDirectly: Processing TabPressed event")
                 WebViewCommunication.callCustomFunction(
                     to: webView,
                     functionName: AccrueEvents.OutgoingToWebView.Functions.GoToHomeScreen
                 )
-                print("✅ AccrueWebView.sendEventDirectly: TabPressed event processed successfully")
+                print("✅ AccrueWebView: TabPressed event sent successfully")
             default:
-                print("❌ AccrueWebView.sendEventDirectly: Event not supported: \(event)")
+                print("❌ AccrueWebView: Event not supported: \(event)")
             }
         }
 

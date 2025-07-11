@@ -9,7 +9,6 @@ public struct AccrueWallet: View {
     public var onAction: ((String) -> Void)?
     public var shouldShowLoader: Bool = true
     @State private var isLoading: Bool = false
-    @State private var sendEventCallback: ((String) -> Void)?
 
     @ObservedObject public var contextData: AccrueContextData
     #if os(iOS)
@@ -17,22 +16,12 @@ public struct AccrueWallet: View {
             let fallbackUrl = URL(string: AppConstants.productionUrl)!
             let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
 
-            let webView = AccrueWebView(
+            return AccrueWebView(
                 url: url,
                 contextData: contextData,
                 onAction: onAction,
-                isLoading: $isLoading,
-                onEventCallback: { callback in
-                    // Store the callback for sending events
-                    print("🔧 AccrueWallet: onEventCallback being set up...")
-                    DispatchQueue.main.async {
-                        print("✅ AccrueWallet: Setting sendEventCallback")
-                        self.sendEventCallback = callback
-                    }
-                }
+                isLoading: $isLoading
             )
-
-            return webView
         }
     #endif
 
@@ -73,25 +62,10 @@ public struct AccrueWallet: View {
         print("🔍 AccrueWallet.handleEvent called with event: \(event)")
 
         #if os(iOS)
-            if sendEventCallback == nil {
-                print(
-                    "⚠️ AccrueWallet: sendEventCallback is nil! The webview might not be initialized yet."
-                )
-            } else {
-                print("✅ AccrueWallet: sendEventCallback exists, calling it with event: \(event)")
-            }
-
-            // Send event directly to webview using callback
-            sendEventCallback?(event)
-
-            if sendEventCallback == nil {
-                print(
-                    "💡 AccrueWallet: Trying alternative approach using static webview instances...")
-                // Alternative approach: use static webview instances directly
-                let fallbackUrl = URL(string: AppConstants.productionUrl)!
-                let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
-                AccrueWebView.sendEventDirectly(to: url, event: event)
-            }
+            // Use static webview approach directly
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+            AccrueWebView.sendEventDirectly(to: url, event: event)
         #endif
 
         print("✅ AccrueWallet.handleEvent completed - event sent to webview")

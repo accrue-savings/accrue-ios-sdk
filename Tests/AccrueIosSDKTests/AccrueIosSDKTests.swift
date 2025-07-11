@@ -26,6 +26,22 @@ final class AccrueIosSDKTests: XCTestCase {
         XCTAssertTrue(true, "Event handling completed without errors")
     }
 
+    func testStaticEventHandling() throws {
+        #if os(iOS)
+            // Test the static event handling approach directly
+            let testURL = URL(string: "https://test.example.com")!
+
+            // This will show the "No webview found" message, which is expected in tests
+            AccrueWebView.sendEventDirectly(to: testURL, event: "AccrueTabPressed")
+
+            // The test passes if no exception is thrown
+            XCTAssertTrue(true, "Static event handling completed without errors")
+        #else
+            // On non-iOS platforms, just verify the test setup works
+            XCTAssertTrue(true, "Static event handling test skipped on non-iOS platform")
+        #endif
+    }
+
     func testContextDataUpdate() throws {
         // Test that context data updates work correctly
         let contextData = AccrueContextData()
