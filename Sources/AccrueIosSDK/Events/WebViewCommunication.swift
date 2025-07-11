@@ -42,16 +42,6 @@
             }
         }
 
-        /// Sends the "Go to Home Screen" event to the webview
-        /// - Parameter webView: The WKWebView instance to send the event to
-        public static func sendGoToHomeScreenEvent(to webView: WKWebView) {
-            sendCustomEvent(
-                to: webView,
-                eventName: AccrueEvents.OutgoingToWebView.GoToHomeScreen,
-                arguments: ""
-            )
-        }
-
         /// Sends a custom event and clears the context data action upon success
         /// - Parameters:
         ///   - webView: The WKWebView instance to send the event to
