@@ -204,6 +204,12 @@
                     originalBody: body
                 )
 
+            case AccrueEvents.IncomingFromWebView.SignInPerformedMessage:
+                return onAction?(body)
+
+            case AccrueEvents.IncomingFromWebView.SignOutPerformedMessage:
+                return onAction?(body)
+
             default:
                 // Log unhandled events but don't trigger any actions
                 print("WebViewCommunication: Unhandled event type: \(type)")

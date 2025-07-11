@@ -40,6 +40,7 @@ public struct AccrueEvents {
     public struct IncomingFromWebView {
 
         static let SignInPerformedMessage: String = "AccrueWallet::SignInPerformed"
+        static let SignOutPerformedMessage: String = "AccrueWallet::SignOutPerformed"
         static let AppleWalletProvisioningRequested: String =
             "AccrueWallet::AppleWalletProvisioningRequested"
         static let AppleWalletProvisioningResponse: String =
