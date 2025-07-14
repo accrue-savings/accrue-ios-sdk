@@ -17,7 +17,11 @@ public struct AccrueWallet: View {
             let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
 
             return AccrueWebView(
-                url: url, contextData: contextData, onAction: onAction, isLoading: $isLoading)
+                url: url,
+                contextData: contextData,
+                onAction: onAction,
+                isLoading: $isLoading
+            )
         }
     #endif
 
@@ -55,11 +59,21 @@ public struct AccrueWallet: View {
     }
 
     public func handleEvent(event: String) {
-        contextData.setAction(action: event)
+        print("🔍 AccrueWallet.handleEvent called with event: \(event)")
+
+        #if os(iOS)
+            // Use static webview approach directly
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+            AccrueWebView.sendEventDirectly(to: url, event: event)
+        #endif
+
+        print("✅ AccrueWallet.handleEvent completed - event sent to webview")
     }
 
     private func propagateContextDataChanges() {
         #if os(iOS)
+            // Only refresh context data, not actions
             let webView = WebViewComponent
             webView.triggerContextDataRefresh()
         #endif
