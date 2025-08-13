@@ -65,7 +65,7 @@
 
                 // For statement downloads, handle to iOS URLSessionDownloadTask
                 if isStatementDownloadUrl(url: navigationAction.request.url!) {
-                    downloadFile(from: navigationAction.request.url!)
+                    downloadStatement(url: navigationAction.request.url!)
                     decisionHandler(.cancel)
                     return
                 }
@@ -172,35 +172,38 @@
                 return url.scheme == "wallet"
             }
             private func isStatementDownloadUrl(url: URL) -> Bool {
-                return url.absoluteString.contains("/statements/") &&
-                       url.absoluteString.contains("/download")
+                return url.absoluteString.contains("/statements/")
+                    && url.absoluteString.contains("/download")
             }
             private func downloadStatement(url: URL) {
                 let task = URLSession.shared.downloadTask(with: url) { (tempURL, response, error) in
-                        guard let tempURL = tempURL, error == nil else {
-                            print("Download error:", error ?? "Unknown error")
-                            return
-                        }
-
-                        let fileManager = FileManager.default
-                        let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
-
-                        do {
-                            if fileManager.fileExists(atPath: destinationURL.path) {
-                                try fileManager.removeItem(at: destinationURL)
-                            }
-                            try fileManager.moveItem(at: tempURL, to: destinationURL)
-                            DispatchQueue.main.async {
-                                // You can now present a share sheet or open the file
-                                let activityVC = UIActivityViewController(activityItems: [destinationURL], applicationActivities: nil)
-                                UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
-                            }
-                        } catch {
-                            print("File error:", error)
-                        }
+                    guard let tempURL = tempURL, error == nil else {
+                        print("Download error:", error ?? "Unknown error")
+                        return
                     }
 
-                    task.resume()
+                    let fileManager = FileManager.default
+                    let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(
+                        url.lastPathComponent)
+
+                    do {
+                        if fileManager.fileExists(atPath: destinationURL.path) {
+                            try fileManager.removeItem(at: destinationURL)
+                        }
+                        try fileManager.moveItem(at: tempURL, to: destinationURL)
+                        DispatchQueue.main.async {
+                            // You can now present a share sheet or open the file
+                            let activityVC = UIActivityViewController(
+                                activityItems: [destinationURL], applicationActivities: nil)
+                            UIApplication.shared.windows.first?.rootViewController?.present(
+                                activityVC, animated: true)
+                        }
+                    } catch {
+                        print("File error:", error)
+                    }
+                }
+
+                task.resume()
             }
         }
 
