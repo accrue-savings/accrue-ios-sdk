@@ -56,9 +56,18 @@
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
             ) {
+                let statementDownloader = StatementDownloader()
+
                 // IF scheme is wallet://, open the link in an in-app browser (SFSafariViewController)
                 if isWalletDeepLink(url: navigationAction.request.url!) {
                     openSystemDeepLink(url: navigationAction.request.url!)
+                    decisionHandler(.cancel)
+                    return
+                }
+
+                // For statement downloads, handle to iOS URLSessionDownloadTask
+                if isStatementDownloadUrl(url: navigationAction.request.url!) {
+                    statementDownloader.downloadStatement(url: navigationAction.request.url!)
                     decisionHandler(.cancel)
                     return
                 }
@@ -163,6 +172,10 @@
             }
             private func isWalletDeepLink(url: URL) -> Bool {
                 return url.scheme == "wallet"
+            }
+            private func isStatementDownloadUrl(url: URL) -> Bool {
+                return url.absoluteString.contains("/statements/")
+                    && url.absoluteString.contains("/download")
             }
         }
 
