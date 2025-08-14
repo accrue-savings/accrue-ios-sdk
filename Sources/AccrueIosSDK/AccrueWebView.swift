@@ -56,6 +56,8 @@
                 _ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
             ) {
+                let statementDownloader = StatementDownloader()
+
                 // IF scheme is wallet://, open the link in an in-app browser (SFSafariViewController)
                 if isWalletDeepLink(url: navigationAction.request.url!) {
                     openSystemDeepLink(url: navigationAction.request.url!)
@@ -65,7 +67,7 @@
 
                 // For statement downloads, handle to iOS URLSessionDownloadTask
                 if isStatementDownloadUrl(url: navigationAction.request.url!) {
-                    downloadStatement(url: navigationAction.request.url!)
+                    statementDownloader.downloadStatement(url: navigationAction.request.url!)
                     decisionHandler(.cancel)
                     return
                 }
@@ -174,49 +176,6 @@
             private func isStatementDownloadUrl(url: URL) -> Bool {
                 return url.absoluteString.contains("/statements/")
                     && url.absoluteString.contains("/download")
-            }
-            private func downloadStatement(url: URL) {
-                let task = URLSession.shared.downloadTask(with: url) { (tempURL, response, error) in
-                    guard let tempURL = tempURL, error == nil else {
-                        print("Download error:", error ?? "Unknown error")
-                        return
-                    }
-
-                    // Try to get the suggested filename from the server response
-                    var filename = url.lastPathComponent // fallback
-                    if let httpResponse = response as? HTTPURLResponse,
-                       let contentDisposition = httpResponse.allHeaderFields["Content-Disposition"] as? String {
-
-                        // Example: attachment; filename="statement-123.pdf"
-                        if let namePart = contentDisposition
-                            .components(separatedBy: "filename=").last?
-                            .trimmingCharacters(in: .whitespacesAndNewlines) {
-
-                            // Remove surrounding quotes if present
-                            filename = namePart.replacingOccurrences(of: "\"", with: "")
-                        }
-                    }
-
-                    let fileManager = FileManager.default
-                    let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(filename)
-
-                    do {
-                        if fileManager.fileExists(atPath: destinationURL.path) {
-                            try fileManager.removeItem(at: destinationURL)
-                        }
-                        try fileManager.moveItem(at: tempURL, to: destinationURL)
-                        DispatchQueue.main.async {
-                            let activityVC = UIActivityViewController(
-                                activityItems: [destinationURL], applicationActivities: nil
-                            )
-                            UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
-                        }
-                    } catch {
-                        print("File error:", error)
-                    }
-                }
-
-                task.resume()
             }
         }
 
