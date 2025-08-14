@@ -182,9 +182,23 @@
                         return
                     }
 
+                    // Try to get the suggested filename from the server response
+                    var filename = url.lastPathComponent // fallback
+                    if let httpResponse = response as? HTTPURLResponse,
+                       let contentDisposition = httpResponse.allHeaderFields["Content-Disposition"] as? String {
+
+                        // Example: attachment; filename="statement-123.pdf"
+                        if let namePart = contentDisposition
+                            .components(separatedBy: "filename=").last?
+                            .trimmingCharacters(in: .whitespacesAndNewlines) {
+
+                            // Remove surrounding quotes if present
+                            filename = namePart.replacingOccurrences(of: "\"", with: "")
+                        }
+                    }
+
                     let fileManager = FileManager.default
-                    let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(
-                        url.lastPathComponent)
+                    let destinationURL = fileManager.temporaryDirectory.appendingPathComponent(filename)
 
                     do {
                         if fileManager.fileExists(atPath: destinationURL.path) {
@@ -192,11 +206,10 @@
                         }
                         try fileManager.moveItem(at: tempURL, to: destinationURL)
                         DispatchQueue.main.async {
-                            // You can now present a share sheet or open the file
                             let activityVC = UIActivityViewController(
-                                activityItems: [destinationURL], applicationActivities: nil)
-                            UIApplication.shared.windows.first?.rootViewController?.present(
-                                activityVC, animated: true)
+                                activityItems: [destinationURL], applicationActivities: nil
+                            )
+                            UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
                         }
                     } catch {
                         print("File error:", error)
