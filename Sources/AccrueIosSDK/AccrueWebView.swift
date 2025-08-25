@@ -233,7 +233,8 @@
             // Only load the URL if it's different from the current one
             if url != uiView.url {
                 var request = URLRequest(url: url)
-                request.cachePolicy = .reloadIgnoringLocalCacheData
+                // Respect server cache headers (Cloudflare) instead of forcing our own
+                request.cachePolicy = .useProtocolCachePolicy
                 uiView.load(request)
             }
 
