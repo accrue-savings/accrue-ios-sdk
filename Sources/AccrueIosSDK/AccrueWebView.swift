@@ -233,7 +233,7 @@
             // Only load the URL if it's different from the current one
             if url != uiView.url {
                 var request = URLRequest(url: url)
-                request.cachePolicy = .reloadIgnoringLocalCacheData
+                request.cachePolicy = .returnCacheDataElseLoad
                 uiView.load(request)
             }
 
