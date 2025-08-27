@@ -133,6 +133,23 @@
                 }
             }
 
+            // MARK: - Content process termination
+            public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+                print("❌ WebView content process terminated")
+                hardReload(webView)
+            }
+
+            private func hardReload(_ webView: WKWebView) {
+                DispatchQueue.main.async {
+                    self.parent.isLoading = true
+                    if let current = webView.url {
+                        webView.load(URLRequest(url: current))
+                    } else {
+                        webView.load(URLRequest(url: self.parent.url))
+                    }
+                }
+            }
+
             // Helper function to determine if the URL should be opened externally
             private func shouldOpenExternally(url: URL) -> Bool {
                 // Only open external URLs (i.e., URLs not matching the parent WebView's host)
