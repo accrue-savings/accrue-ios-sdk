@@ -6,13 +6,14 @@ import PackageDescription
 let package = Package(
     name: "AccrueIosSDK",
     platforms: [
-        .iOS(.v14)
+        .iOS(.v14),
+        .macOS(.v11),
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "AccrueIosSDK",
-            targets: ["AccrueIosSDK"]),
+            targets: ["AccrueIosSDK"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

@@ -1,10 +1,162 @@
 #if canImport(UIKit)
-
     import SwiftUI
     import WebKit
     import UIKit
     import Foundation
     import SafariServices
+
+    // MARK: - WebView Preloader
+    @available(iOS 13.0, macOS 10.15, *)
+    public class WebViewPreloader {
+        private static var preloadedWebViews: [URL: WKWebView] = [:]
+        private static var preloadCompletionHandlers: [URL: [(Bool) -> Void]] = [:]
+
+        /// Preloads a WebView for the given URL in the background
+        /// - Parameters:
+        ///   - url: The URL to preload
+        ///   - contextData: Optional context data to inject
+        ///   - completion: Completion handler called when preloading is complete
+        public static func preloadWebView(
+            for url: URL,
+            contextData: AccrueContextData? = nil,
+            completion: @escaping (Bool) -> Void
+        ) {
+            // If already preloaded, return immediately
+            if preloadedWebViews[url] != nil {
+                completion(true)
+                return
+            }
+
+            // Store completion handler
+            if preloadCompletionHandlers[url] == nil {
+                preloadCompletionHandlers[url] = []
+            }
+            preloadCompletionHandlers[url]?.append(completion)
+
+            // If already preloading, just add the completion handler
+            if preloadCompletionHandlers[url]?.count ?? 0 > 1 {
+                return
+            }
+
+            // Create and configure WebView
+            let configuration = WKWebViewConfiguration()
+            configuration.websiteDataStore = .default()
+
+            let webView = WKWebView(frame: .zero, configuration: configuration)
+
+            // Create a temporary coordinator for preloading
+            let coordinator = PreloadCoordinator(url: url, contextData: contextData) { success in
+                if success {
+                    preloadedWebViews[url] = webView
+                }
+
+                // Call all completion handlers
+                preloadCompletionHandlers[url]?.forEach { handler in
+                    handler(success)
+                }
+                preloadCompletionHandlers[url] = nil
+            }
+
+            webView.navigationDelegate = coordinator
+            webView.uiDelegate = coordinator
+
+            // Disable zoom and pinch effect
+            webView.isMultipleTouchEnabled = false
+            webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+            webView.scrollView.minimumZoomScale = 1.0
+            webView.scrollView.maximumZoomScale = 1.0
+
+            if #available(iOS 16.4, *) {
+                webView.isInspectable = true
+            }
+
+            // Add the script message handler
+            let userContentController = webView.configuration.userContentController
+            userContentController.add(coordinator, name: AccrueEvents.EventHandlerName)
+
+            // Inject JavaScript to set context data
+            if let contextData = contextData {
+                ContextDataGenerator.injectContextData(
+                    into: userContentController, contextData: contextData)
+            }
+
+            // Load the URL
+            var request = URLRequest(url: url)
+            request.cachePolicy = .useProtocolCachePolicy
+            webView.load(request)
+        }
+
+        /// Gets a preloaded WebView for the given URL
+        /// - Parameter url: The URL to get the preloaded WebView for
+        /// - Returns: The preloaded WebView if available, nil otherwise
+        public static func getPreloadedWebView(for url: URL) -> WKWebView? {
+            return preloadedWebViews[url]
+        }
+
+        /// Removes a preloaded WebView for the given URL
+        /// - Parameter url: The URL to remove the preloaded WebView for
+        public static func removePreloadedWebView(for url: URL) {
+            preloadedWebViews.removeValue(forKey: url)
+        }
+
+        /// Clears all preloaded WebViews
+        public static func clearAllPreloadedWebViews() {
+            preloadedWebViews.removeAll()
+        }
+
+        /// Checks if a WebView is preloaded for the given URL
+        /// - Parameter url: The URL to check
+        /// - Returns: True if a WebView is preloaded, false otherwise
+        public static func isPreloaded(for url: URL) -> Bool {
+            return preloadedWebViews[url] != nil
+        }
+    }
+
+    // MARK: - Preload Coordinator
+    @available(iOS 13.0, macOS 10.15, *)
+    private class PreloadCoordinator: NSObject, WKScriptMessageHandler, WKNavigationDelegate,
+        WKUIDelegate
+    {
+        private let url: URL
+        private let contextData: AccrueContextData?
+        private let completion: (Bool) -> Void
+
+        init(url: URL, contextData: AccrueContextData?, completion: @escaping (Bool) -> Void) {
+            self.url = url
+            self.contextData = contextData
+            self.completion = completion
+            super.init()
+        }
+
+        func userContentController(
+            _ userContentController: WKUserContentController,
+            didReceive message: WKScriptMessage
+        ) {
+            // Handle incoming events if needed for preloading
+            _ = WebViewCommunication.handleIncomingEvent(
+                message,
+                webView: nil,
+                onAction: nil
+            )
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            completion(true)
+        }
+
+        func webView(
+            _ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error
+        ) {
+            completion(false)
+        }
+
+        func webView(
+            _ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            completion(false)
+        }
+    }
 
     @available(iOS 13.0, macOS 10.15, *)
     public struct AccrueWebView: UIViewRepresentable {
@@ -201,6 +353,22 @@
         }
 
         public func makeUIView(context: Context) -> WKWebView {
+            // First check if we have a preloaded WebView for this URL
+            if let preloadedWebView = WebViewPreloader.getPreloadedWebView(for: url) {
+                // Transfer the preloaded WebView to our instances and update its delegates
+                preloadedWebView.navigationDelegate = context.coordinator
+                preloadedWebView.uiDelegate = context.coordinator
+
+                // Remove from preloaded instances since it's now being used
+                WebViewPreloader.removePreloadedWebView(for: url)
+
+                // Store in our instances
+                Self.webViewInstances[url] = preloadedWebView
+                context.coordinator.webView = preloadedWebView
+
+                return preloadedWebView
+            }
+
             // Check if we already have a WebView instance for this URL
             if let existingWebView = Self.webViewInstances[url] {
                 return existingWebView
@@ -309,6 +477,33 @@
             } else {
                 print("AccrueWebView: No web view found")
             }
+        }
+
+        // MARK: - Static Preloading Methods
+
+        /// Preloads a WebView for the given URL in the background
+        /// - Parameters:
+        ///   - url: The URL to preload
+        ///   - contextData: Optional context data to inject
+        ///   - completion: Completion handler called when preloading is complete
+        public static func preload(
+            for url: URL, contextData: AccrueContextData? = nil,
+            completion: @escaping (Bool) -> Void
+        ) {
+            WebViewPreloader.preloadWebView(
+                for: url, contextData: contextData, completion: completion)
+        }
+
+        /// Checks if a WebView is preloaded for the given URL
+        /// - Parameter url: The URL to check
+        /// - Returns: True if a WebView is preloaded, false otherwise
+        public static func isPreloaded(for url: URL) -> Bool {
+            return WebViewPreloader.isPreloaded(for: url)
+        }
+
+        /// Clears all preloaded WebViews
+        public static func clearPreloadedWebViews() {
+            WebViewPreloader.clearAllPreloadedWebViews()
         }
     }
 #endif

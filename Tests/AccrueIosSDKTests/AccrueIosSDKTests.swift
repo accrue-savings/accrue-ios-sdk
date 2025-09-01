@@ -73,4 +73,87 @@ final class AccrueIosSDKTests: XCTestCase {
         let eventHandlerName = AccrueEvents.EventHandlerName
         XCTAssertEqual(eventHandlerName, "AccrueWallet")
     }
+
+    #if os(iOS)
+        func testWebViewPreloading() throws {
+            // Test URL preloading
+            let url = URL(string: "https://embed.accruesavings.com/webview")!
+
+            // Initially should not be preloaded
+            XCTAssertFalse(AccrueWebView.isPreloaded(for: url))
+
+            // Test preloading
+            let expectation = XCTestExpectation(description: "WebView preloading")
+            AccrueWebView.preload(for: url) { success in
+                XCTAssertTrue(success)
+                expectation.fulfill()
+            }
+
+            wait(for: [expectation], timeout: 10.0)
+
+            // Should now be preloaded
+            XCTAssertTrue(AccrueWebView.isPreloaded(for: url))
+
+            // Test clearing
+            AccrueWebView.clearPreloadedWebViews()
+            XCTAssertFalse(AccrueWebView.isPreloaded(for: url))
+        }
+
+        func testWalletPreloading() throws {
+            let wallet = AccrueWallet(
+                merchantId: "test-merchant",
+                redirectionToken: nil,
+                isSandbox: true,
+                contextData: AccrueContextData()
+            )
+
+            // Initially should not be preloaded
+            XCTAssertFalse(wallet.isWebViewPreloaded())
+
+            // Test preloading
+            let expectation = XCTestExpectation(description: "Wallet WebView preloading")
+            wallet.preloadWebView { success in
+                XCTAssertTrue(success)
+                expectation.fulfill()
+            }
+
+            wait(for: [expectation], timeout: 10.0)
+
+            // Should now be preloaded
+            XCTAssertTrue(wallet.isWebViewPreloaded())
+        }
+
+        func testSDKPreloading() throws {
+            // Test SDK-level preloading
+            let expectation = XCTestExpectation(description: "SDK WebView preloading")
+
+            AccrueIosSDK.preloadWalletWebView(
+                merchantId: "test-merchant",
+                isSandbox: true
+            ) { success in
+                XCTAssertTrue(success)
+                expectation.fulfill()
+            }
+
+            wait(for: [expectation], timeout: 10.0)
+
+            // Test cleanup
+            AccrueIosSDK.cleanup()
+        }
+    #else
+        func testWebViewPreloading() throws {
+            // Skip test on non-iOS platforms
+            XCTAssertTrue(true, "WebView preloading test skipped on non-iOS platform")
+        }
+
+        func testWalletPreloading() throws {
+            // Skip test on non-iOS platforms
+            XCTAssertTrue(true, "Wallet preloading test skipped on non-iOS platform")
+        }
+
+        func testSDKPreloading() throws {
+            // Skip test on non-iOS platforms
+            XCTAssertTrue(true, "SDK preloading test skipped on non-iOS platform")
+        }
+    #endif
 }

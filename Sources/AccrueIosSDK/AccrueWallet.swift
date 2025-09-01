@@ -102,4 +102,26 @@ public struct AccrueWallet: View {
         return urlComponents?.url
     }
 
+    // MARK: - Preloading Methods
+
+    #if os(iOS)
+        /// Preloads the WebView for this wallet in the background
+        /// - Parameter completion: Completion handler called when preloading is complete
+        public func preloadWebView(completion: @escaping (Bool) -> Void = { _ in }) {
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+
+            AccrueWebView.preload(for: url, contextData: contextData, completion: completion)
+        }
+
+        /// Checks if the WebView for this wallet is preloaded
+        /// - Returns: True if the WebView is preloaded, false otherwise
+        public func isWebViewPreloaded() -> Bool {
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+
+            return AccrueWebView.isPreloaded(for: url)
+        }
+    #endif
+
 }
