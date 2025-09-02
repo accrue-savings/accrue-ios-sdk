@@ -65,7 +65,7 @@
                 // Add script message handler
                 let userContentController = webView.configuration.userContentController
                 userContentController.add(
-                    AccrueWebViewPreloaderCoordinator(), name: AccrueEvents.EventHandlerName)
+                    AccrueWebViewCoordinator(), name: AccrueEvents.EventHandlerName)
 
                 // Inject context data if provided
                 if let contextData = contextData {
@@ -77,7 +77,7 @@
                 preloadedWebViews[url] = webView
 
                 // Load the URL
-                let request = URLRequest(url: url)
+                var request = URLRequest(url: url)
                 request.cachePolicy = .useProtocolCachePolicy
                 webView.load(request)
 
@@ -279,7 +279,7 @@
             }
 
             // Check if there's a preloaded webview available
-            if let preloadedWebView = AccrueWebViewPreloader.shared.getPreloadedWebView(for: url) {
+            if let preloadedWebView = Self.getPreloadedWebView(for: url) {
                 // Transfer the preloaded webview to our instances
                 Self.webViewInstances[url] = preloadedWebView
                 context.coordinator.webView = preloadedWebView
@@ -393,7 +393,7 @@
     }
 
     // Coordinator for preloaded webviews
-    private class AccrueWebViewPreloaderCoordinator: NSObject, WKScriptMessageHandler {
+    private class AccrueWebViewCoordinator: NSObject, WKScriptMessageHandler {
         func userContentController(
             _ userContentController: WKUserContentController, didReceive message: WKScriptMessage
         ) {
