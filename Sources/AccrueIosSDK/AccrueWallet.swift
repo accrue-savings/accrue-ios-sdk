@@ -44,7 +44,18 @@ public struct AccrueWallet: View {
         #if os(iOS)
             let fallbackUrl = URL(string: AppConstants.productionUrl)!
             let targetUrl = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
-            AccrueWebViewPreloader.shared.preloadWebView(for: targetUrl, contextData: contextData)
+            AccrueWebView.preloadWebView(for: targetUrl, contextData: contextData)
+        #endif
+    }
+
+    /// Check if the webview is preloaded
+    public func isPreloaded() -> Bool {
+        #if os(iOS)
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let targetUrl = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+            return AccrueWebView.isPreloaded(for: targetUrl)
+        #else
+            return false
         #endif
     }
 
