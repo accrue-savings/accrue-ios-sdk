@@ -206,6 +206,14 @@
                 return existingWebView
             }
 
+            // Check if there's a preloaded webview available
+            if let preloadedWebView = AccrueWebViewPreloader.shared.getPreloadedWebView(for: url) {
+                // Transfer the preloaded webview to our instances
+                Self.webViewInstances[url] = preloadedWebView
+                context.coordinator.webView = preloadedWebView
+                return preloadedWebView
+            }
+
             // Configure the website data store
             let configuration = WKWebViewConfiguration()
             configuration.websiteDataStore = .default()

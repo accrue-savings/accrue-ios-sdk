@@ -39,6 +39,15 @@ public struct AccrueWallet: View {
         self.shouldShowLoader = shouldShowLoader
     }
 
+    /// Preload the webview in the background for faster tab switching
+    public func preloadWebView() {
+        #if os(iOS)
+            let fallbackUrl = URL(string: AppConstants.productionUrl)!
+            let targetUrl = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
+            AccrueWebViewPreloader.shared.preloadWebView(for: targetUrl, contextData: contextData)
+        #endif
+    }
+
     public var body: some View {
         #if os(iOS)
             ZStack {
