@@ -35,15 +35,16 @@
 
         /// Preload a webview for the given URL in the background
         public static func preloadWebView(for url: URL, contextData: AccrueContextData? = nil) {
-            preloadQueue.async {
-                // Check if already preloaded
-                if preloadedWebViews[url] != nil {
-                    print("✅ WebView already preloaded for URL: \(url)")
-                    return
-                }
+            // Check if already preloaded on main thread first
+            if preloadedWebViews[url] != nil {
+                print("✅ WebView already preloaded for URL: \(url)")
+                return
+            }
 
-                print("🔄 Preloading WebView for URL: \(url)")
+            print("🔄 Preloading WebView for URL: \(url)")
 
+            // Perform WebKit operations on main thread
+            DispatchQueue.main.async {
                 // Create webview configuration
                 let configuration = WKWebViewConfiguration()
                 configuration.websiteDataStore = .default()
