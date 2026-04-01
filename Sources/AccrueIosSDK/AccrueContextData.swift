@@ -18,12 +18,12 @@ public class AccrueContextData: ObservableObject {
     }
 
     public func updateUserData(
-        referenceId: String?, email: String?, phoneNumber: String?,
-        additionalData: [String: String]?
+        referenceId: String?, stableReferenceId: String? = nil, email: String?,
+        phoneNumber: String?, additionalData: [String: String]?
     ) {
         userData = AccrueUserData(
-            referenceId: referenceId, email: email, phoneNumber: phoneNumber,
-            additionalData: additionalData)
+            referenceId: referenceId, stableReferenceId: stableReferenceId, email: email,
+            phoneNumber: phoneNumber, additionalData: additionalData)
     }
 
     public func updateSettingsData(shouldInheritAuthentication: Bool) {
@@ -33,17 +33,20 @@ public class AccrueContextData: ObservableObject {
 
 public struct AccrueUserData {
     public let referenceId: String?
+    public let stableReferenceId: String?
     public let email: String?
     public let phoneNumber: String?
     public let additionalData: [String: String]?
 
     public init(
         referenceId: String? = nil,
+        stableReferenceId: String? = nil,
         email: String? = nil,
         phoneNumber: String? = nil,
         additionalData: [String: String]? = nil
     ) {
         self.referenceId = referenceId
+        self.stableReferenceId = stableReferenceId
         self.email = email
         self.phoneNumber = phoneNumber
         self.additionalData = additionalData

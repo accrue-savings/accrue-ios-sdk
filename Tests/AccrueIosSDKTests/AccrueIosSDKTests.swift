@@ -49,12 +49,14 @@ final class AccrueIosSDKTests: XCTestCase {
         // Test userData update
         contextData.updateUserData(
             referenceId: "test-ref",
+            stableReferenceId: "stable-ref",
             email: "test@example.com",
             phoneNumber: "+1234567890",
             additionalData: ["key": "value"]
         )
 
         XCTAssertEqual(contextData.userData.referenceId, "test-ref")
+        XCTAssertEqual(contextData.userData.stableReferenceId, "stable-ref")
         XCTAssertEqual(contextData.userData.email, "test@example.com")
         XCTAssertEqual(contextData.userData.phoneNumber, "+1234567890")
         XCTAssertEqual(contextData.userData.additionalData?["key"], "value")

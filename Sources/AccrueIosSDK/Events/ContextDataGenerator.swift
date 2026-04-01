@@ -21,6 +21,7 @@
                           "contextData": {
                               "userData": {
                                   "referenceId": \(userData.referenceId.map { "\"\($0)\"" } ?? "null"),
+                                  "stableReferenceId": \(userData.stableReferenceId.map { "\"\($0)\"" } ?? "null"),
                                   "email": \(userData.email.map { "\"\($0)\"" } ?? "null"),
                                   "phoneNumber": \(userData.phoneNumber.map { "\"\($0)\"" } ?? "null"),
                                   "additionalData": \(additionalDataJSON)
