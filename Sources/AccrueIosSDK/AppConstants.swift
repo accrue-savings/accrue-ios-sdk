@@ -1,5 +1,5 @@
 public struct AppConstants {
-    // Mocked testing environment
+    static let sdkUrlsEndpoint: String = "https://www.byaccrue.com/sdk-urls"
     static let sandboxUrl: String = "https://embed-sandbox.accruesavings.com/webview"
     static let productionUrl: String = "https://embed.accruesavings.com/webview"
     // Mocked merchantId
