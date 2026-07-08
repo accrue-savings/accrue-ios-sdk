@@ -9,14 +9,13 @@ public struct AccrueWallet: View {
     public var onAction: ((String) -> Void)?
     public var shouldShowLoader: Bool = true
     @State private var isLoading: Bool = false
+    @State private var resolvedWidgetURL: URL?
+    @State private var requestedURLConfigurationKey: String?
 
     @ObservedObject public var contextData: AccrueContextData
     #if os(iOS)
-        private var WebViewComponent: AccrueWebView {
-            let fallbackUrl = URL(string: AppConstants.productionUrl)!
-            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
-
-            return AccrueWebView(
+        private func WebViewComponent(url: URL) -> AccrueWebView {
+            AccrueWebView(
                 url: url,
                 contextData: contextData,
                 onAction: onAction,
@@ -42,8 +41,11 @@ public struct AccrueWallet: View {
     public var body: some View {
         #if os(iOS)
             ZStack {
-                WebViewComponent
-                if isLoading && shouldShowLoader {
+                if let resolvedWidgetURL = resolvedWidgetURL {
+                    WebViewComponent(url: resolvedWidgetURL)
+                }
+
+                if (isLoading || resolvedWidgetURL == nil) && shouldShowLoader {
                     VStack {
                         AccrueLoader()
                     }
@@ -51,6 +53,21 @@ public struct AccrueWallet: View {
                     .background(Color.white.opacity(0.8))
                     .edgesIgnoringSafeArea(.all)
                 }
+            }
+            .onAppear {
+                resolveWidgetURL()
+            }
+            .onChange(of: merchantId) { _ in
+                resolveWidgetURL()
+            }
+            .onChange(of: redirectionToken) { _ in
+                resolveWidgetURL()
+            }
+            .onChange(of: isSandbox) { _ in
+                resolveWidgetURL()
+            }
+            .onChange(of: url) { _ in
+                resolveWidgetURL()
             }
             .onReceive(contextData.objectWillChange) { _ in
                 propagateContextDataChanges()
@@ -62,44 +79,70 @@ public struct AccrueWallet: View {
         print("🔍 AccrueWallet.handleEvent called with event: \(event)")
 
         #if os(iOS)
-            // Use static webview approach directly
-            let fallbackUrl = URL(string: AppConstants.productionUrl)!
-            let url = buildURL(isSandbox: isSandbox, url: url) ?? fallbackUrl
-            AccrueWebView.sendEventDirectly(to: url, event: event)
+            AccrueSDKURLResolver.shared.resolveWidgetURL(
+                isSandbox: isSandbox,
+                overrideURL: url,
+                merchantId: merchantId,
+                redirectionToken: redirectionToken
+            ) { result in
+                switch result {
+                case .success(let resolvedURL):
+                    AccrueWebView.sendEventDirectly(to: resolvedURL, event: event)
+                    print("✅ AccrueWallet.handleEvent completed - event sent to webview")
+                case .failure(let error):
+                    print("❌ AccrueWallet.handleEvent failed to resolve widget URL: \(error)")
+                }
+            }
         #endif
-
-        print("✅ AccrueWallet.handleEvent completed - event sent to webview")
     }
 
     private func propagateContextDataChanges() {
         #if os(iOS)
             // Only refresh context data, not actions
-            let webView = WebViewComponent
-            webView.triggerContextDataRefresh()
+            guard let resolvedWidgetURL = resolvedWidgetURL else {
+                return
+            }
+
+            WebViewComponent(url: resolvedWidgetURL).triggerContextDataRefresh()
         #endif
     }
 
-    private func buildURL(isSandbox: Bool, url: String?) -> URL? {
-        let apiBaseUrl: String
+    private func resolveWidgetURL() {
+        let urlConfigurationKey = [
+            merchantId,
+            redirectionToken ?? "",
+            isSandbox ? "sandbox" : "production",
+            url ?? "",
+        ].joined(separator: "|")
 
-        if isSandbox {
-            apiBaseUrl = AppConstants.sandboxUrl
-        } else if let validUrl = url {
-            apiBaseUrl = validUrl
-        } else {
-            apiBaseUrl = AppConstants.productionUrl
-        }
-        var urlComponents = URLComponents(string: apiBaseUrl)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "merchantId", value: merchantId)
-        ]
-
-        if let redirectionToken = redirectionToken {
-            urlComponents?.queryItems?.append(
-                URLQueryItem(name: "redirectionToken", value: redirectionToken))
+        guard requestedURLConfigurationKey != urlConfigurationKey else {
+            return
         }
 
-        return urlComponents?.url
+        requestedURLConfigurationKey = urlConfigurationKey
+        resolvedWidgetURL = nil
+        isLoading = true
+
+        AccrueSDKURLResolver.shared.resolveWidgetURL(
+            isSandbox: isSandbox,
+            overrideURL: url,
+            merchantId: merchantId,
+            redirectionToken: redirectionToken
+        ) { result in
+            guard requestedURLConfigurationKey == urlConfigurationKey else {
+                return
+            }
+
+            switch result {
+            case .success(let resolvedURL):
+                resolvedWidgetURL = resolvedURL
+            case .failure(let error):
+                requestedURLConfigurationKey = nil
+                print("❌ AccrueWallet failed to resolve widget URL: \(error)")
+            }
+
+            isLoading = false
+        }
     }
 
 }

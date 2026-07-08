@@ -2,6 +2,22 @@ import XCTest
 
 @testable import AccrueIosSDK
 
+private final class FailingURLProtocol: URLProtocol {
+    override class func canInit(with request: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+    }
+
+    override func stopLoading() {}
+}
+
 final class AccrueIosSDKTests: XCTestCase {
 
     func testEventHandling() throws {
@@ -74,5 +90,116 @@ final class AccrueIosSDKTests: XCTestCase {
 
         let eventHandlerName = AccrueEvents.EventHandlerName
         XCTAssertEqual(eventHandlerName, "AccrueWallet")
+    }
+
+    func testWidgetURLBuilderUsesRemoteProductionBaseURL() throws {
+        let url = try AccrueWidgetURLBuilder.buildURL(
+            sdkURLs: AccrueSDKURLs(
+                production: "https://embed.example.com",
+                sandbox: "https://sandbox.example.com"
+            ),
+            isSandbox: false,
+            overrideURL: nil,
+            merchantId: "merchant-1",
+            redirectionToken: "token-1"
+        )
+
+        XCTAssertEqual(
+            url.absoluteString,
+            "https://embed.example.com/webview?merchantId=merchant-1&redirectionToken=token-1"
+        )
+    }
+
+    func testWidgetURLBuilderUsesRemoteSandboxBaseURL() throws {
+        let url = try AccrueWidgetURLBuilder.buildURL(
+            sdkURLs: AccrueSDKURLs(
+                production: "https://embed.example.com",
+                sandbox: "https://sandbox.example.com"
+            ),
+            isSandbox: true,
+            overrideURL: nil,
+            merchantId: "merchant-1",
+            redirectionToken: nil
+        )
+
+        XCTAssertEqual(
+            url.absoluteString,
+            "https://sandbox.example.com/webview?merchantId=merchant-1"
+        )
+    }
+
+    func testWidgetURLBuilderPreservesExistingWebviewPath() throws {
+        let url = try AccrueWidgetURLBuilder.buildURL(
+            sdkURLs: AccrueSDKURLs(
+                production: "https://embed.example.com/webview",
+                sandbox: "https://sandbox.example.com/webview"
+            ),
+            isSandbox: false,
+            overrideURL: nil,
+            merchantId: "merchant-1",
+            redirectionToken: nil
+        )
+
+        XCTAssertEqual(
+            url.absoluteString,
+            "https://embed.example.com/webview?merchantId=merchant-1"
+        )
+    }
+
+    func testWidgetURLBuilderCanUseProductionFallbackURL() throws {
+        let url = try AccrueWidgetURLBuilder.buildFallbackURL(
+            isSandbox: false,
+            merchantId: "merchant-1",
+            redirectionToken: "token-1"
+        )
+
+        XCTAssertEqual(
+            url.absoluteString,
+            "https://embed.accruesavings.com/webview?merchantId=merchant-1&redirectionToken=token-1"
+        )
+    }
+
+    func testWidgetURLBuilderCanUseSandboxFallbackURL() throws {
+        let url = try AccrueWidgetURLBuilder.buildFallbackURL(
+            isSandbox: true,
+            merchantId: "merchant-1",
+            redirectionToken: nil
+        )
+
+        XCTAssertEqual(
+            url.absoluteString,
+            "https://embed-sandbox.accruesavings.com/webview?merchantId=merchant-1"
+        )
+    }
+
+    func testSDKURLResolverFallsBackToProductionURLWhenRemoteConfigFails() {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [FailingURLProtocol.self]
+        let resolver = AccrueSDKURLResolver(
+            endpoint: URL(string: "https://example.com/sdk-urls")!,
+            session: URLSession(configuration: configuration)
+        )
+        let expectation = expectation(description: "resolves fallback widget URL")
+
+        resolver.resolveWidgetURL(
+            isSandbox: false,
+            overrideURL: nil,
+            merchantId: "merchant-1",
+            redirectionToken: "token-1"
+        ) { result in
+            switch result {
+            case .success(let url):
+                XCTAssertEqual(
+                    url.absoluteString,
+                    "https://embed.accruesavings.com/webview?merchantId=merchant-1&redirectionToken=token-1"
+                )
+            case .failure(let error):
+                XCTFail("Expected fallback URL, got error: \(error)")
+            }
+
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 1)
     }
 }
