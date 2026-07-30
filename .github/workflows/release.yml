@@ -39,9 +39,9 @@ jobs:
       - name: Update PackageVersion file
         run: |
           NEXT_VERSION=$(echo ${{ steps.semver.outputs.next }} | cut -d v -f 2)
-          cat <<EOF > ./PackageVersion.swift
+          cat <<EOF > ./Sources/AccrueIosSDK/Package/PackageVersion.swift
           public struct PackageVersion {
-            public static let version = "${NEXT_VERSION}"
+              public static let version = "${NEXT_VERSION}"
           }
           EOF
           git config --global user.name "Github Workflow"
