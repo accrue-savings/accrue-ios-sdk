@@ -28,7 +28,8 @@ final class AccrueIosSDKTests: XCTestCase {
         let accrueWallet = AccrueWallet(
             merchantId: "test-merchant",
             redirectionToken: "test-token",
-            isSandbox: true,
+            isSandbox: false,
+            url: "http://127.0.0.1:1", // Resolve locally; never fetch production configuration in tests.
             contextData: contextData,
             onAction: { event in
                 receivedEvents.append(event)

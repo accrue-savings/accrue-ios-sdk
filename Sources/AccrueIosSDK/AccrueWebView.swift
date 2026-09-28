@@ -6,6 +6,27 @@
     import Foundation
     import SafariServices
 
+    // Native load identity belongs to the view, so it survives coordinator replacement.
+    private final class WalletWebView: WKWebView {
+        var requestedURL: URL?
+        private var contextScript: WKUserScript?
+
+        func updateContextScript(_ contextData: AccrueContextData?) {
+            let source = contextData.map { ContextDataGenerator.generateContextDataScript(contextData: $0) }
+            guard source != contextScript?.source else { return }
+
+            let controller = configuration.userContentController
+            // Replace only the SDK's script, preserving scripts installed by integrators.
+            let otherScripts = controller.userScripts.filter { $0 !== contextScript }
+            controller.removeAllUserScripts()
+            otherScripts.forEach { controller.addUserScript($0) }
+            contextScript = source.map {
+                WKUserScript(source: $0, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+            }
+            if let contextScript { controller.addUserScript(contextScript) }
+        }
+    }
+
     @available(iOS 13.0, macOS 10.15, *)
     public struct AccrueWebView: UIViewRepresentable {
         public let url: URL
@@ -14,7 +35,7 @@
         @Binding var isLoading: Bool
 
         // Add a static dictionary to track WebView instances
-        private static var webViewInstances: [URL: WKWebView] = [:]
+        private static var webViewInstances: [URL: WalletWebView] = [:]
 
         public init(
             url: URL,
@@ -115,12 +136,14 @@
                 _ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!
             ) {
                 DispatchQueue.main.async {
+                    guard webView.navigationDelegate === self else { return }
                     self.parent.isLoading = true  // ✅ Safe UI update
                 }
             }
 
             public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
                 DispatchQueue.main.async {
+                    guard webView.navigationDelegate === self else { return }
                     self.parent.isLoading = false
                 }
             }
@@ -129,6 +152,7 @@
                 _ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error
             ) {
                 DispatchQueue.main.async {
+                    guard webView.navigationDelegate === self else { return }
                     self.parent.isLoading = false
                 }
             }
@@ -141,6 +165,7 @@
 
             private func hardReload(_ webView: WKWebView) {
                 DispatchQueue.main.async {
+                    guard webView.navigationDelegate === self else { return }
                     self.parent.isLoading = true
                     if let current = webView.url {
                         webView.load(URLRequest(url: current))
@@ -203,6 +228,7 @@
         public func makeUIView(context: Context) -> WKWebView {
             // Check if we already have a WebView instance for this URL
             if let existingWebView = Self.webViewInstances[url] {
+                attach(existingWebView, to: context.coordinator)
                 return existingWebView
             }
 
@@ -211,11 +237,7 @@
             configuration.websiteDataStore = .default()
 
             // Create WebView with the configuration
-            let webView = WKWebView(frame: .zero, configuration: configuration)
-
-            // Set the navigation delegate
-            webView.navigationDelegate = context.coordinator
-            webView.uiDelegate = context.coordinator
+            let webView = WalletWebView(frame: .zero, configuration: configuration)
 
             // Disable zoom and pinch effect
             webView.isMultipleTouchEnabled = false
@@ -227,32 +249,48 @@
                 webView.isInspectable = true
             }
 
-            // Add the script message handler
-            let userContentController = webView.configuration.userContentController
-            userContentController.add(
-                context.coordinator, name: AccrueEvents.EventHandlerName)
-
-            // Inject JavaScript to set context data using ContextDataGenerator
-            if let contextData = contextData {
-                ContextDataGenerator.injectContextData(
-                    into: userContentController, contextData: contextData)
-            }
-
-            // Store the WebView instance
             Self.webViewInstances[url] = webView
-
-            context.coordinator.webView = webView  // 🆕 let the coordinator remember the instance
+            attach(webView, to: context.coordinator)
 
             return webView
         }
 
+        private func attach(_ webView: WalletWebView, to coordinator: Coordinator) {
+            if let previous = webView.navigationDelegate as? Coordinator, previous !== coordinator {
+                previous.webView = nil
+            }
+            coordinator.parent = self
+            coordinator.webView = webView
+            webView.navigationDelegate = coordinator
+            webView.uiDelegate = coordinator
+            let controller = webView.configuration.userContentController
+            controller.removeScriptMessageHandler(forName: AccrueEvents.EventHandlerName)
+            controller.add(coordinator, name: AccrueEvents.EventHandlerName)
+            webView.updateContextScript(contextData)
+
+            // A cached document may already be loaded when a new binding attaches.
+            DispatchQueue.main.async {
+                guard webView.navigationDelegate === coordinator else { return }
+                coordinator.parent.isLoading = webView.isLoading
+            }
+        }
+
         public func updateUIView(_ uiView: WKWebView, context: Context) {
-            // Only load the URL if it's different from the current one
-            if url != uiView.url {
+            context.coordinator.parent = self
+            guard let webView = uiView as? WalletWebView else { return }
+            webView.updateContextScript(contextData)
+
+            // Browser navigation (including SPA routes and redirects) does not change
+            // the destination requested by the host app. Record it before starting a load.
+            if webView.requestedURL != url {
+                Self.webViewInstances = Self.webViewInstances.filter {
+                    $0.value !== webView || $0.key == url
+                }
+                Self.webViewInstances[url] = webView
+                webView.requestedURL = url
                 var request = URLRequest(url: url)
-                // Respect server cache headers (Cloudflare) instead of forcing our own
                 request.cachePolicy = .useProtocolCachePolicy
-                uiView.load(request)
+                webView.load(request)
             }
 
             // Refresh context data using ContextDataGenerator (but not actions)
