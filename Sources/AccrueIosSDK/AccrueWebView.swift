@@ -9,6 +9,8 @@
     // Native load identity belongs to the view, so it survives coordinator replacement.
     private final class WalletWebView: WKWebView {
         var requestedURL: URL?
+        var requestedNavigation: WKNavigation?
+        var hasFailedRequestedNavigation = false
         private var contextScript: WKUserScript?
 
         func updateContextScript(_ contextData: AccrueContextData?) {
@@ -16,14 +18,23 @@
             guard source != contextScript?.source else { return }
 
             let controller = configuration.userContentController
-            // Replace only the SDK's script, preserving scripts installed by integrators.
-            let otherScripts = controller.userScripts.filter { $0 !== contextScript }
-            controller.removeAllUserScripts()
-            otherScripts.forEach { controller.addUserScript($0) }
-            contextScript = source.map {
+            // Preserve execution order: later scripts may depend on the SDK context.
+            var scripts = controller.userScripts
+            let replacement = source.map {
                 WKUserScript(source: $0, injectionTime: .atDocumentStart, forMainFrameOnly: false)
             }
-            if let contextScript { controller.addUserScript(contextScript) }
+            if let index = scripts.firstIndex(where: { $0 === contextScript }) {
+                if let replacement {
+                    scripts[index] = replacement
+                } else {
+                    scripts.remove(at: index)
+                }
+            } else if let replacement {
+                scripts.append(replacement)
+            }
+            controller.removeAllUserScripts()
+            scripts.forEach { controller.addUserScript($0) }
+            contextScript = replacement
         }
     }
 
@@ -141,6 +152,33 @@
                 }
             }
 
+            public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+                guard webView.navigationDelegate === self,
+                    let walletWebView = webView as? WalletWebView else { return }
+                // A committed document also completes an explicit reload/process recovery.
+                walletWebView.requestedNavigation = nil
+                walletWebView.hasFailedRequestedNavigation = false
+            }
+
+            public func webView(
+                _ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
+                withError error: Error
+            ) {
+                guard webView.navigationDelegate === self else { return }
+                let failure = error as NSError
+                if let walletWebView = webView as? WalletWebView, let navigation,
+                    navigation === walletWebView.requestedNavigation,
+                    !(failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled)
+                {
+                    walletWebView.hasFailedRequestedNavigation = true
+                }
+                DispatchQueue.main.async {
+                    guard webView.navigationDelegate === self else { return }
+                    // A cancelled older navigation may already have a replacement loading.
+                    self.parent.isLoading = webView.isLoading
+                }
+            }
+
             public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
                 DispatchQueue.main.async {
                     guard webView.navigationDelegate === self else { return }
@@ -228,6 +266,11 @@
         public func makeUIView(context: Context) -> WKWebView {
             // Check if we already have a WebView instance for this URL
             if let existingWebView = Self.webViewInstances[url] {
+                // Retry a failed host request only when the wrapper is mounted again.
+                // Ordinary updates keep its identity, preventing an automatic retry loop.
+                if existingWebView.hasFailedRequestedNavigation && !existingWebView.isLoading {
+                    existingWebView.requestedURL = nil
+                }
                 attach(existingWebView, to: context.coordinator)
                 return existingWebView
             }
@@ -288,9 +331,10 @@
                 }
                 Self.webViewInstances[url] = webView
                 webView.requestedURL = url
+                webView.hasFailedRequestedNavigation = false
                 var request = URLRequest(url: url)
                 request.cachePolicy = .useProtocolCachePolicy
-                webView.load(request)
+                webView.requestedNavigation = webView.load(request)
             }
 
             // Refresh context data using ContextDataGenerator (but not actions)

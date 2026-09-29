@@ -122,6 +122,108 @@ final class AccrueWebViewNavigationTests: XCTestCase {
         XCTAssertEqual(integratorMarker, "preserved")
     }
 
+    func testFailedInitialLoadRetriesOnlyAfterRemount() async throws {
+        server.rejectRequests = true
+        let webView = try await mount()
+        try await eventually { !self.server.requests.isEmpty && !webView.isLoading }
+        XCTAssertNil(webView.url, "The fixture must fail before a document commits")
+        let failedRequestCount = server.requests.count
+        try await eventually { !self.model.isLoading }
+
+        // Native updates must not turn a failure into another automatic reload loop.
+        for _ in 0..<3 {
+            model.revision += 1
+            try await settle()
+        }
+        XCTAssertEqual(server.requests.count, failedRequestCount)
+        server.rejectRequests = false
+        model.revision += 1
+        try await settle()
+        XCTAssertEqual(server.requests.count, failedRequestCount)
+
+        model.visible = false
+        try await settle()
+        model.visible = true
+        try await eventually { self.server.requests.count > failedRequestCount }
+        XCTAssertTrue(findWebView(in: host.view) === webView)
+        _ = try XCTUnwrap(webView.url, "Remounting must retry the failed initial destination")
+        try await ready(webView)
+        XCTAssertEqual(webView.url?.path, "/wallet/auth/pin")
+        XCTAssertEqual(server.requests.count, failedRequestCount + 1)
+        model.revision += 1
+        try await settle()
+        XCTAssertEqual(server.requests.count, failedRequestCount + 1)
+    }
+
+    func testFailedBrowserNavigationPreservesDocumentOnRemount() async throws {
+        let webView = try await mount()
+        try await ready(webView)
+        let token = try await javaScript("window.documentToken", in: webView) as? String
+        server.rejectRequests = true
+        _ = try await javaScript("location.href = '/auth-return'; true", in: webView)
+        try await eventually { self.server.requests.count > 1 && !webView.isLoading }
+        let requestsAfterFailure = server.requests.count
+        server.rejectRequests = false
+        model.visible = false
+        try await settle()
+        model.visible = true
+        try await settle()
+        XCTAssertTrue(findWebView(in: host.view) === webView)
+        XCTAssertEqual(server.requests.count, requestsAfterFailure)
+        let currentToken = try await javaScript("window.documentToken", in: webView) as? String
+        XCTAssertEqual(currentToken, token, "A failed browser navigation must not restart the native destination")
+    }
+
+    func testProcessRecoveryClearsFailedLoadBeforeRemount() async throws {
+        server.rejectRequests = true
+        let webView = try await mount()
+        try await eventually { !self.server.requests.isEmpty && !webView.isLoading }
+        try await eventually { !self.model.isLoading }
+        let failedRequestCount = server.requests.count
+        server.rejectRequests = false
+        let coordinator = try XCTUnwrap(webView.navigationDelegate as? AccrueWebView.Coordinator)
+        coordinator.webViewWebContentProcessDidTerminate(webView)
+        try await eventually { self.server.requests.count > failedRequestCount }
+        try await ready(webView)
+        let token = try await javaScript("window.documentToken", in: webView) as? String
+        model.visible = false
+        try await settle()
+        model.visible = true
+        try await settle()
+        XCTAssertEqual(server.requests.count, failedRequestCount + 1)
+        let currentToken = try await javaScript("window.documentToken", in: webView) as? String
+        XCTAssertEqual(currentToken, token, "Successful explicit recovery must clear the pending remount retry")
+    }
+
+    func testContextReplacementPreservesDependentStartupScriptOrder() async throws {
+        model.context = AccrueContextData()
+        model.context?.updateUserData(referenceId: "before", email: nil, phoneNumber: nil, additionalData: nil)
+        let webView = try await mount()
+        try await ready(webView)
+        let controller = webView.configuration.userContentController
+        controller.addUserScript(WKUserScript(source: """
+            window.startupReference = window.AccrueWallet?.contextData?.userData?.referenceId ?? 'missing';
+            window.integrationOrder = ['first'];
+            """, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        controller.addUserScript(WKUserScript(source: "window.integrationOrder.push('second');",
+                                              injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        for reference in ["intermediate", "after"] {
+            let context = AccrueContextData()
+            context.updateUserData(referenceId: reference, email: nil, phoneNumber: nil, additionalData: nil)
+            model.context = context
+            try await settle()
+        }
+        XCTAssertEqual(controller.userScripts.count, 3)
+        XCTAssertEqual(server.requests.count, 1)
+        webView.reload()
+        try await eventually { self.server.requests.count == 2 }
+        try await ready(webView)
+        let startupReference = try await javaScript("window.startupReference", in: webView) as? String
+        let integrationOrder = try await javaScript("window.integrationOrder.join(',')", in: webView) as? String
+        XCTAssertEqual(startupReference, "after", "Dependent scripts must run after the latest SDK context")
+        XCTAssertEqual(integrationOrder, "first,second")
+    }
+
     func testHTTPRedirectAndAuthNavigationAreNotOverridden() async throws {
         model.url = server.url("/redirect")
         let webView = try await mount()
@@ -242,6 +344,11 @@ private final class WalletHTTPFixture: @unchecked Sendable {
     private let lock = NSLock()
     private var recordedRequests: [String] = []
     private var listeningPort: UInt16?
+    private var shouldRejectRequests = false
+    var rejectRequests: Bool {
+        get { lock.lock(); defer { lock.unlock() }; return shouldRejectRequests }
+        set { lock.lock(); defer { lock.unlock() }; shouldRejectRequests = newValue }
+    }
     var requests: [String] { lock.lock(); defer { lock.unlock() }; return recordedRequests }
     var port: UInt16? { lock.lock(); defer { lock.unlock() }; return listeningPort }
 
@@ -280,7 +387,12 @@ private final class WalletHTTPFixture: @unchecked Sendable {
             let path = String(request.split(separator: " ")[1])
             self.lock.lock()
             self.recordedRequests.append(path)
+            let rejectRequest = self.shouldRejectRequests
             self.lock.unlock()
+            if rejectRequest {
+                connection.cancel()
+                return
+            }
             let response: String
             if path == "/redirect" {
                 response = "HTTP/1.1 302 Found\r\nLocation: /wallet/boot\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"

@@ -13,4 +13,4 @@ xcodebuild test -scheme AccrueIosSDK \
   -parallel-testing-enabled NO
 ```
 
-`AccrueWebViewNavigationTests` hosts the real SwiftUI wrapper and WKWebView against an in-process loopback HTTP server. It covers SPA routing, native destination changes, cached reuse, callback/loading ownership, context updates, redirects, explicit reload, the process-recovery delegate callback, and cleanup. Tests do not require production services or accounts. The WebView tests require iOS; a macOS-only test run does not exercise them.
+`AccrueWebViewNavigationTests` hosts the real SwiftUI wrapper and WKWebView against an in-process loopback HTTP server. It covers SPA routing, native destination changes, cached reuse, failed-load recovery on remount, callback/loading ownership, context updates and startup-script order, redirects, explicit reload, the process-recovery delegate callback, and cleanup. Tests do not require production services or accounts. The WebView tests require iOS; a macOS-only test run does not exercise them.
